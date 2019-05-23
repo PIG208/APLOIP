@@ -1,0 +1,6 @@
+# APLIOP
+APLOIP(AP Lang Online Interaction Platform) provides students studying AP Language with supports online
+# Overview
+The anticipated outcome of this project is a comprehensive study website specifically designed for AP Lang. It’s going to be consisted with two major modules: Lang-pedia and Lang-repository. We aim to assist AP Lang students, especially students in SMS receiving advanced placement courses, through setting up an online information exchanging platform.
+# Lang-pedia
+Lang-pedia serves to provide information specifically about the AP Lang course on the website. Lang-pedia is a free encyclopedia for every students to edit. The core content of Lang-pedia will be based on AP Lang course in Shenzhen Middle School and the actual College Board AP test, covering rhetorical strategies, genres, writings and so on. Unlike Wikipedia, which provides detailed information and “distraction” from the course, Lang-pedia offers knowledge specifically integrated for AP Lang students. Also, as it’s particularly created for the convenience of SMS students studying AP Lang, the entries will be grounded on the actual curricular activities in class, such as the themes of The Things They Carried, the ages of APP faculties.
