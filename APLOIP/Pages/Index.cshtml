@@ -1,25 +1,23 @@
-﻿@page
-@model APLOIP.wwwroot.IndexModel
+﻿@page "/Home"
+@model APLOIP.Pages.IndexModel
 @{
-    ViewData["Title"] = "Discover";
+    ViewData["Title"] = "HOME";
 }
 
-<h2>Discover</h2>
-<hr />
-<div class="container">
-    <div class="row">
-        <div class="col-sm">
-            <div class="box box-p">P</div>
-            <p>asadsda</p>
-        </div>
-        <div class="col-sm">
-            <div class="box box-r">R</div>
-        </div>
+<div class="row row-narrow">
+    <div class="col-sm">
+        <h1>About</h1>
+        <p>APLOIP (AP Language Online Interaction Platform) is a system allowing students to find and share knowledge</p>
+        <p><a asp-page="/About">More Info  <i class="fa fa-angle-right"></i></a></p>
     </div>
 </div>
-<hr />
+<div class="row">
+    <div class="col-sm column">
+        <a class="box box-p nonselect shadow" asp-page="/Pedia">P</a>
+    </div>
+    <div class="col-sm column">
+        <a class="box box-r nonselect shadow" asp-page="/Repository">R</a>
+    </div>
+</div>
 
-<footer>
-    <p>&copy; 2019 - Razor_Sample_Test</p>
-</footer>
 

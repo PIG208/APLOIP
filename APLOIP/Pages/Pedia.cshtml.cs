@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace APLOIP.Pages
 {
-    public class IndexModel : PageModel
+    public class PediaModel : PageModel
     {
         public void OnGet()
         {
