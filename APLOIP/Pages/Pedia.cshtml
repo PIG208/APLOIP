@@ -1,5 +1,21 @@
 ﻿@page "/Pedia"
 @model APLOIP.Pages.PediaModel
-@{ 
+@{
     ViewData["Title"] = "PEDIA";
+}
+
+@foreach(var basicClass in @Model.BasicClasses)
+{
+    <row>
+        <div role="button" class="basics-box shadow-sm pointer nonselect">
+            <span class="fa fa-@basicClass.FaIcon"></span>
+            @basicClass.Title
+        </div>
+    </row>
+}
+@section Scripts{
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"></script>
+    <script>
+        $.each()
+    </script>
 }

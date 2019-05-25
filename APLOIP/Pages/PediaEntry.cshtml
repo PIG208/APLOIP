@@ -1,0 +1,11 @@
+﻿@page "/Pedia/{title}"
+@model APLOIP.Pages.PediaEntryModel
+@{ 
+    ViewData["Title"] = "PEDIA";
+}
+
+<h1>@Model.DisplayTitle</h1>
+<h2>@Model.BasicClassTitle</h2>
+@Html.Raw(Model.PageContent)
+
+

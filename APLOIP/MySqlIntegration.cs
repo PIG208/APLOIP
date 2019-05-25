@@ -64,12 +64,12 @@ namespace MySql.Data.MySqlClient
         /**
          * 进行SELECT操作
          * */
-        public List<Dictionary<string, string>>/*MySqlDataReader */ MySqlSelect(string table, string[] keys, string specifier = null)
+        public List<Dictionary<string, object>>/*MySqlDataReader */ MySqlSelect(string table, string[] keys, string specifier = null)
         {
             if (connection.State == ConnectionState.Open) return null;
             AlterConnection(true);
             string queryStr = "SELECT {0} FROM {1} {2}";
-            queryStr = string.Format(queryStr, MakeStr(keys), table, (specifier != null && specifier.Trim() != "") ? "WHERE " + specifier : "");
+            queryStr = string.Format(queryStr, MakeStr(keys, ignore: true), table, (specifier != null && specifier.Trim() != "") ? "WHERE " + specifier : "");
             MySqlDataReader mySqlDataReader = null;
             queryString = queryStr;
             try
@@ -82,7 +82,7 @@ namespace MySql.Data.MySqlClient
                 throw e;
             }
 
-            List<Dictionary<string, string>> result = GetResult(mySqlDataReader);
+            List<Dictionary<string, object>> result = GetResult(mySqlDataReader);
 
             AlterConnection(false);
             return result;
@@ -92,12 +92,12 @@ namespace MySql.Data.MySqlClient
         /**
          * 进行INSERT INTO操作
          * */
-        public int /*MySqlDataReader*/ MysqlInsert(string table, string[] keys, params string[] vals)
+        public int /*MySqlDataReader*/ MysqlInsert(string table, string[] keys, params object[] vals)
         {
             if (connection.State == ConnectionState.Open) return 0;
             AlterConnection(true);
             string queryStr = "INSERT INTO {0} ({1}) VALUES ({2})";
-            queryStr = string.Format(queryStr, table, MakeStr(keys), MakeStr(vals));
+            queryStr = string.Format(queryStr, table, MakeStr(keys, ignore: true), MakeStr(vals));
             MySqlDataReader mySqlDataReader = null;
             queryString = queryStr;
             try
@@ -121,7 +121,7 @@ namespace MySql.Data.MySqlClient
         /**
          * 进行UPDATE操作
          * */
-        public int /*MySqlDataReader */ MysqlUpdate(string table, string[] keys, string specifier, params string[] vals)
+        public int /*MySqlDataReader */ MysqlUpdate(string table, string[] keys, string specifier, params object[] vals)
         {
             if (connection.State == ConnectionState.Open) return 0;
             AlterConnection(true);
@@ -187,27 +187,27 @@ namespace MySql.Data.MySqlClient
         /**
          * 将MySqlDataReader对象读取为二维数组
          * */
-        public List<Dictionary<string, string>> GetResult(MySqlDataReader mySqlDataReader)
+        public List<Dictionary<string, object>> GetResult(MySqlDataReader mySqlDataReader)
         {
             if (connection.State == ConnectionState.Closed) return null;
             if (mySqlDataReader != null)
             {
                 //判断列数
-                List<Dictionary<string, string>> result = new List<Dictionary<string, string>>();
+                List<Dictionary<string, object>> result = new List<Dictionary<string, object>>();
                 try
                 { 
                     while (mySqlDataReader.Read())
                     {
-                        Dictionary<string, string> tempRow = new Dictionary<string, string>();
+                        Dictionary<string, object> tempRow = new Dictionary<string, object>();
                         for (int i = 0; i < mySqlDataReader.FieldCount; i++)
                         {
                             var val = mySqlDataReader.GetValue(i);
-                            string str;
+                            /*string str;
                             if (val.GetType() == typeof(DateTime))
                                 str = ((DateTime)val).ToString("yyyy-MM-dd HH:mm:ss");
                             else
-                                str = val.ToString();
-                            tempRow.Add(mySqlDataReader.GetName(i), str);
+                                str = val.ToString();*/
+                            tempRow.Add(mySqlDataReader.GetName(i), val);
                         }
                         result.Add(tempRow);
                     }
@@ -225,11 +225,11 @@ namespace MySql.Data.MySqlClient
         /**
          * 将数组构建为字符串
          * */
-        private static string MakeStr(string[] keys)
+        private static string MakeStr(object[] keys, bool ignore = false)
         {
             string result = "";
-            foreach(string str in keys)
-                result += str + ",";
+            foreach(object obj in keys)
+                result += ((!ignore && obj.GetType() == typeof(string))? QuoteStr((string) obj):obj.ToString()) + ",";
             return result.Substring(0, result.Length - 1);
         }
 
