@@ -29,6 +29,12 @@ p {
 footer {
     height: 6vh;
     margin-top: -6vh;
+    font-size: 0.8rem;
+}
+@media screen and (min-width: 768px) {
+    footer {
+        font-size: 0.75rem;
+    }
 }
 
 .nonselect {
@@ -86,6 +92,42 @@ footer {
 .box-r {
     background-color: rgb(181, 230, 29);
 }
+
+.pointer {
+    cursor: pointer;
+}
+
+.basics-box {
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    height: 4rem;
+    border-radius: 5%;
+    color: darkslateblue;
+    background-color: aliceblue;
+    line-height: 3rem;
+    text-align: left;
+    font-size: 2rem;
+}
+    .basics-box:hover {
+        opacity: 0.7;
+    }
+    .basics-box::after {
+        content: "";
+        width: 0.5rem;
+        height: 0.5rem;
+        background-color: cornflowerblue;
+        margin-top: 1.25rem;
+        border-radius: 50%;
+        position: relative;
+        float: right;
+    }
+@media screen and (min-width: 768px){
+    .basics-box {
+        max-width: 60vh;
+    }
+}
+
 
 .column {
     padding: 0 0 0 0;
