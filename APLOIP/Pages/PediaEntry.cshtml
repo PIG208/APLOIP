@@ -1,11 +1,98 @@
 ﻿@page "/Pedia/{title}"
 @model APLOIP.Pages.PediaEntryModel
-@{ 
+@{
     ViewData["Title"] = "PEDIA";
 }
 
+<style>
+    #toolbar{
+        user-select:none;
+        /*display:inline-block;*/
+        display:none;
+        border-radius:0.5em;
+        padding:0.1rem 0.1rem 0.1rem 0.1rem;
+    }
+    #toolbar > button{
+        display:inline-block;
+        position:relative;
+        height:2.3rem;
+        margin:0.05rem 0.05rem 0.05rem 0.05rem;
+    }
+    #toolbar > button > .fa{
+        font-size:1.2rem;
+    }
+</style>
+
+<button id="btn-edit" class="btn btn-light float-right">Edit</button>
 <h1>@Model.DisplayTitle</h1>
 <h2>@Model.BasicClassTitle</h2>
-@Html.Raw(Model.PageContent)
+<div id="editcontent"></div>
+<div id="view">
+    @Html.Raw(Model.PageContent);
+</div>
+<div id="popper">
+    <p>asd</p>
+</div>
+<span id="toolbar" class="bg-light">
+    <button id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph in the bottom" class="btn btn-light"><span class="fa fa-plus"></span></button>
+    <button id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph in the bottom" class="btn btn-light"><span class="fa fa-minus"></span></button>
+</span>
+@section Scripts
+{
+    <script>
+        var edit = false;
+        var $focus;
+        var history = [$focus];
 
+        $('[data-toggle="popover"]').popover();
+        $('[data-toggle="popover"]').hover(function () {
+            $(this).popover('show');
+        });
+        $('[data-toggle="popover"]').mouseleave(function () {
+            $(this).popover('hide');
+        });
 
+        function addToolbar($obj) {
+            $obj.focusin(function () {
+                $focus = $(this);
+                console.log($focus);
+                $("#toolbar").insertAfter($(this));
+                $("#toolbar").finish().fadeIn(200);
+            });
+            $obj.focusout(function () {
+                //$focus = undefined;
+                $("#toolbar").finish().fadeOut(200);
+            });
+        }
+
+        $("#btn-edit").click(function () {
+            if (edit)
+                return;
+            $(this).hide();
+            $("#view").addClass("editor");
+            $("#editcontent").append($("#view"));
+            $(".editor").each(function(){
+                BalloonEditor.
+                    create(this);
+                }
+            );
+            addToolbar($(".editor"));
+        });
+        $("#insertline").click(function () {
+            var $newPara = $('<div class="editor"></div>');
+            $newPara.hide();
+            $newPara.insertBefore($("#toolbar"));
+            BalloonEditor.
+                create($newPara.get(0));
+            addToolbar($newPara);
+            $newPara.slideDown(250);
+        });
+        $("#removeline").click(function () {
+            console.log($focus);
+            if ($focus != undefined && $focus != null)
+                $focus.hide();
+            if ($("#editorcontent > .editor").length == 0)
+                123;
+        });
+    </script>
+}
