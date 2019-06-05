@@ -44,12 +44,12 @@ namespace APLOIP.Pages
                 CreationTime = (DateTime)obj[0]["creation_time"];
                 var modificationTime = obj[0]["modification_time"];
                 //ModificationTime = (DateTime)((modificationTime.GetType() != typeof(DBNull)) ?modificationTime : null);
-                string[] keysBasicClass = { "title" };
+                string[] keysBasicClass = { "title_display" };
                 if(selectInteg.MySqlSelect("basic_class", keysBasicClass, "ID=" + BasicClassID).Count > 0)
                 {
-                    if (selectInteg.IntegratedResult[0]["title"] != null)
+                    if (selectInteg.IntegratedResult[0]["title_display"] != null)
                     {
-                        BasicClassTitle = (string)selectInteg.IntegratedResult[0]["title"];
+                        BasicClassTitle = (string)selectInteg.IntegratedResult[0]["title_display"];
                     }
                 }
             }
@@ -80,7 +80,7 @@ namespace APLOIP.Pages
             int lineAffected;
             if (postInteg.IntegratedResult.Count > 0)
             {
-                lineAffected = postInteg.MySqlUpdate("entries", keysSave, (string)RouteData.Values["title"], BasicClassID, DisplayTitle, SaveContent);
+                lineAffected = postInteg.MySqlUpdate("entries", keysSave, "title_unique=" + MySqlIntegration.QuoteStr((string)RouteData.Values["title"]), (string)RouteData.Values["title"], BasicClassID, DisplayTitle, SaveContent);
             }
             else
             {

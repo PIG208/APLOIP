@@ -129,7 +129,8 @@ namespace MySql.Data.MySqlClient
             string kvpsStr = "";
             foreach (var item in keys.Select((value, i) => new { i, value }))
             {
-                kvpsStr += item.value + "=" + vals[item.i] + ",";
+                object[] temp = { vals[item.i] };
+                kvpsStr += item.value + "=" + MakeStr(temp) + ",";
             }
             kvpsStr = kvpsStr.Substring(0, kvpsStr.Length - 1);
             queryStr = string.Format(queryStr, table, kvpsStr, (specifier != null && specifier.Trim() != "") ? "WHERE " + specifier : "");
