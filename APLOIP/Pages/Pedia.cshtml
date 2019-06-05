@@ -7,10 +7,10 @@
 @foreach(var basicClass in @Model.BasicClasses)
 {
     <row>
-        <div role="button" class="basics-box shadow-sm pointer nonselect">
+        <a role="button" href="/Pedia/@basicClass.UniqueTitle" class="basics-box shadow-sm pointer nonselect">
             <span class="fa fa-@basicClass.FaIcon"></span>
-            @basicClass.Title
-        </div>
+            @basicClass.DisplayTitle
+        </a>
     </row>
 }
 @section Scripts{

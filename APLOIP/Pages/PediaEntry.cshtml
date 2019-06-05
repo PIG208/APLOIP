@@ -5,38 +5,95 @@
 }
 
 <style>
-    #toolbar{
-        user-select:none;
+    #toolbar {
+        user-select: none;
         /*display:inline-block;*/
-        display:none;
-        border-radius:0.5em;
-        padding:0.1rem 0.1rem 0.1rem 0.1rem;
+        display: none;
+        border-radius: 0.5em;
+        padding: 0.1rem 0.1rem 0.1rem 0.1rem;
+        background-color: transparent;
     }
-    #toolbar > button{
-        display:inline-block;
-        position:relative;
-        height:2.3rem;
-        margin:0.05rem 0.05rem 0.05rem 0.05rem;
+
+        #toolbar > button {
+            display: inline-block;
+            position: relative;
+            height: 2.3rem;
+            margin: 0.05rem 0.05rem 0.05rem 0.05rem;
+        }
+
+            #toolbar > button > .fa {
+                font-size: 1.2rem;
+            }
+
+    .editToolbar {
+        display: none;
+        float: right;
+        margin-right: 0.5rem;
+        margin-left: 0.5rem;
     }
-    #toolbar > button > .fa{
-        font-size:1.2rem;
+
+    .paragraph {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
     }
 </style>
 
-<button id="btn-edit" class="btn btn-light float-right">Edit</button>
-<h1>@Model.DisplayTitle</h1>
-<h2>@Model.BasicClassTitle</h2>
+@Html.AntiForgeryToken()
+<button type="button" id="btn-edit" class="btn btn-light float-right">Edit</button>
+<button type="button" class="btn btn-light editToolbar" data-toggle="modal" data-target="#modal-exit">Exit</button>
+<button type="button" class="btn btn-info editToolbar" data-toggle="modal" data-target="#modal-save">Save</button>
+<h1>@PediaEntryModel.DisplayTitle</h1>
+<h2>@PediaEntryModel.BasicClassTitle</h2>
 <div id="editcontent"></div>
 <div id="view">
-    @Html.Raw(Model.PageContent);
+    @Html.Raw(PediaEntryModel.PageContent)
 </div>
-<div id="popper">
-    <p>asd</p>
-</div>
-<span id="toolbar" class="bg-light">
-    <button id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph in the bottom" class="btn btn-light"><span class="fa fa-plus"></span></button>
-    <button id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph in the bottom" class="btn btn-light"><span class="fa fa-minus"></span></button>
+
+<div id="popper"></div>
+<span id="toolbar">
+    <button type="button" id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph" class="btn btn-light"><span class="fa fa-plus"></span></button>
+    <button type="button" id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph" class="btn btn-light"><span class="fa fa-minus"></span></button>
 </span>
+<div id="modal-save" class="modal fade" role="dialog" aria-labelledby="Save the changes" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h5>Save</h5>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure to save all changes you have made to this entry?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save" type="button" class="btn btn-info">Save</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modal-exit" class="modal fade" role="dialog" aria-labelledby="Discard the changes and exit" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h5>Exit</h5>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure to discard all the changes and exit? </p>
+                <p>You will not be able to recover the changes you have made.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-exit" type="button" class="btn btn-danger" data-dismiss="modal">Exit</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @section Scripts
 {
     <script>
@@ -52,10 +109,9 @@
             $(this).popover('hide');
         });
 
-        function addToolbar($obj) {
+        function paraInit($obj) {
             $obj.focusin(function () {
                 $focus = $(this);
-                console.log($focus);
                 $("#toolbar").insertAfter($(this));
                 $("#toolbar").finish().fadeIn(200);
             });
@@ -63,36 +119,74 @@
                 //$focus = undefined;
                 $("#toolbar").finish().fadeOut(200);
             });
+            $obj.change(function () {
+                if (!$obj.text()) {
+
+                }
+            })
         }
 
-        $("#btn-edit").click(function () {
+        function paraInsert($target) {
+            var $newPara = $('<div class="paragraph"></div>');
+            $newPara.insertBefore($target);
+            BalloonEditor.
+                create($newPara.get(0), {
+                    placeholder: "Click to edit the paragraph"
+                });
+            paraInit($newPara);
+            $newPara.slideDown(50);
+        }
+
+        $("#btn-edit").mousedown(function () {
             if (edit)
                 return;
-            $(this).hide();
-            $("#view").addClass("editor");
+            $(this).fadeOut(250, () => $(".editToolbar").fadeIn(250));
+            $("#view").addClass("paragraph");
             $("#editcontent").append($("#view"));
-            $(".editor").each(function(){
+            $(".paragraph").each(function () {
                 BalloonEditor.
-                    create(this);
+                    create(this, {
+                    placeholder: "Click to edit the paragraph"
+                    });
+            });
+            paraInit($(".paragraph"));
+        });
+        $("#btn-save").mousedown(function () {
+            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
+                return;
+            $.ajax({
+                url: '/Pedia/@RouteData.Values["title"]?handler=Save',
+                type: "POST",
+                dataType: "json",
+                contentType: "text/plain; charset=utf-8",
+                data: $("#editcontent").text(),
+                beforeSend: (xhr) => {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $("input:hidden[name=__RequestVerificationToken]").val());
+                },
+                error: function () {
+                    console.log("error");
+                },
+                success: function (data) {
+                    if (data["lineAffect"] != null)
+                        console.log(data["lineAffect"]);
+                },
+                complete: () => {
+                    $(this).data("isCompleted", true);
                 }
-            );
-            addToolbar($(".editor"));
+            })
         });
-        $("#insertline").click(function () {
-            var $newPara = $('<div class="editor"></div>');
-            $newPara.hide();
-            $newPara.insertBefore($("#toolbar"));
-            BalloonEditor.
-                create($newPara.get(0));
-            addToolbar($newPara);
-            $newPara.slideDown(250);
+        $("#insertline").mousedown(function () {
+            paraInsert($("#toolbar"));
         });
-        $("#removeline").click(function () {
-            console.log($focus);
-            if ($focus != undefined && $focus != null)
-                $focus.hide();
-            if ($("#editorcontent > .editor").length == 0)
-                123;
+        $("#removeline").mousedown(function () {
+            console.log($("#editcontent > .paragraph").length);
+            if ($("#editcontent > .paragraph").length == 1)
+                paraInsert($("#toolbar"));
+            if ($focus != undefined && $focus != null) {
+
+            }
+            $focus.fadeOut(200);
         });
     </script>
 }
