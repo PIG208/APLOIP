@@ -28,7 +28,7 @@ namespace MySql.Data.MySqlClient
          * */
         private MySqlConnection MySqlconnect(string connString)
         {
-            MySqlConnection conn = null;
+            MySqlConnection conn;
             try
             {
                 conn = new MySqlConnection(connString);
@@ -67,7 +67,7 @@ namespace MySql.Data.MySqlClient
             AlterConnection(true);
             string queryStr = "SELECT {0} FROM {1} {2}";
             queryStr = string.Format(queryStr, MakeStr(keys, ignore: true), table, (specifier != null && specifier.Trim() != "") ? "WHERE " + specifier : "");
-            MySqlDataReader mySqlDataReader = null;
+            MySqlDataReader mySqlDataReader;
             queryString = queryStr;
             try
             {
@@ -97,7 +97,7 @@ namespace MySql.Data.MySqlClient
             AlterConnection(true);
             string queryStr = "INSERT INTO {0} ({1}) VALUES ({2})";
             queryStr = string.Format(queryStr, table, MakeStr(keys, ignore: true), MakeStr(vals));
-            MySqlDataReader mySqlDataReader = null;
+            MySqlDataReader mySqlDataReader;
             queryString = queryStr;
             try
             {
@@ -164,7 +164,7 @@ namespace MySql.Data.MySqlClient
             AlterConnection(true);
             string queryStr = "DELETE FROM {0} {1}";
             queryStr = string.Format(queryStr, table, (specifier != null && specifier.Trim() != "") ? "WHERE " + specifier : "");
-            MySqlDataReader mySqlDataReader = null;
+            MySqlDataReader mySqlDataReader;
             queryString = queryStr;
             try
             {
