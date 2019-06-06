@@ -22,11 +22,12 @@ namespace APLOIP.Pages
         {
             MySqlIntegration selectInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
             BasicClasses = new List<BasicClass>();
-            string[] keys = {"ID", "title", "description", "fa_icon", "style" };
+            string[] keys = {"ID", "title_unique", "title_display", "description", "fa_icon", "style" };
             selectInteg.MySqlSelect("basic_class", keys).ForEach(obj =>
             {
                 BasicClass basicClass = new BasicClass
                 {
+                    ID = (int)obj["ID"],
                     UniqueTitle = (string)obj["title_unique"],
                     DisplayTitle = (string)obj["title_display"],
                     Description = (string)obj["description"],
@@ -41,6 +42,7 @@ namespace APLOIP.Pages
 
     public class BasicClass
     {
+        public int ID { get; set; }
         public string UniqueTitle { get; set; }
 
         public string DisplayTitle { get; set; }

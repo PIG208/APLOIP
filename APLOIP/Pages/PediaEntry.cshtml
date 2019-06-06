@@ -5,6 +5,11 @@
 }
 
 <style>
+    h2 {
+        font-size: 1.5rem;
+        color: grey;
+    }
+
     #toolbar {
         user-select: none;
         /*display:inline-block;*/
@@ -36,71 +41,121 @@
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
     }
+
+    #trashpara {
+        display: none;
+    }
 </style>
 
 @Html.AntiForgeryToken()
 <button type="button" id="btn-edit" class="btn btn-light float-right">Edit</button>
 <button type="button" class="btn btn-light editToolbar" data-toggle="modal" data-target="#modal-exit">Exit</button>
+<button type="button" class="btn btn-light editToolbar" data-toggle="modal" data-target="#modal-settings">Settings</button>
 <button type="button" class="btn btn-info editToolbar" data-toggle="modal" data-target="#modal-save">Save</button>
-<h1>@PediaEntryModel.DisplayTitle</h1>
-<h2>@PediaEntryModel.BasicClassTitle</h2>
-<div id="editcontent"></div>
-<div id="view">
-    @Html.Raw(PediaEntryModel.PageContent)
-</div>
 
-<div id="popper"></div>
-<span id="toolbar">
-    <button type="button" id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph" class="btn btn-light"><span class="fa fa-plus"></span></button>
-    <button type="button" id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph" class="btn btn-light"><span class="fa fa-minus"></span></button>
-</span>
-<div id="modal-save" class="modal fade" role="dialog" aria-labelledby="Save the changes" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <h5>Save</h5>
-                </div>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure to save all changes you have made to this entry?</p>
-            </div>
-            <div class="modal-footer">
-                <button id="btn-save" type="button" class="btn btn-info">Save</button>
-                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modal-exit" class="modal fade" role="dialog" aria-labelledby="Discard the changes and exit" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <h5>Exit</h5>
-                </div>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure to discard all the changes and exit? </p>
-                <p>You will not be able to recover the changes you have made.</p>
-            </div>
-            <div class="modal-footer">
-                <button id="btn-exit" type="button" class="btn btn-danger" data-dismiss="modal">Exit</button>
-                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-@section Scripts
+<h1 id="page-title">@Model.PageEntry.DisplayTitle</h1>
+<hr />
+@if (!Model.IsBasicEntry(Model.PageEntry))
 {
-    <script>
+<h2 id="page-basic-class-title">
+    @PediaEntryModel.BasicClasses.Find(basicClassObj => basicClassObj.ID == Model.PageEntry.BasicClassID)?.DisplayTitle
+</h2>
+}
+    <div id="view">
+        @Html.Raw(Model.PageEntry.PageContent)
+    </div>
+
+    <div id="popper"></div>
+    <div id="trashpara"></div>
+    <span id="toolbar">
+        <button type="button" id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph" class="btn btn-light"><span class="fa fa-plus"></span></button>
+        <button type="button" id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph" class="btn btn-light"><span class="fa fa-minus"></span></button>
+    </span>
+    <div id="modal-save" class="modal fade" role="dialog" aria-labelledby="Save the changes" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h5>Save</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure to save all changes you have made to this entry?</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-save" type="button" class="btn btn-info">Save</button>
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-settings" class="modal fade" role="dialog" aria-labelledby="Settings" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h5>Settings</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <form id="settings">
+                        <div class="form-group">
+                            <label for="DisplayTitle">DisplayTitle</label>
+                            <input id="DisplayTitle" name="DisplayTitle" type="text" class="form-control" placeholder="@Model.PageEntry.DisplayTitle" value="@Model.PageEntry.DisplayTitle" />
+                        </div>
+                        <div class="form-group">
+                            <label for="BasicClass">BasicClass</label>
+                            <select id="BasicClass" class="form-control" value="@Model.PageEntry.BasicClassID"
+                                    @if (Model.IsBasicEntry(Model.PageEntry)) { @Html.Raw("disabled") }>
+                                <option value="0">None</option>
+                                @if (PediaEntryModel.BasicClasses.Count > 0)
+                                {
+                                    @foreach (BasicClass basicClass in PediaEntryModel.BasicClasses)
+                                    {
+                                        @Html.Raw("<option value=" + basicClass.ID + ((Model.PageEntry.BasicClassID == basicClass.ID) ? " selected" : "") + ">" + @basicClass.DisplayTitle + "</option>")
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-settings" type="button" class="btn btn-info">Save</button>
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-exit" class="modal fade" role="dialog" aria-labelledby="Discard the changes and exit" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h5>Exit</h5>
+                    </div>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure to discard all the changes and exit? </p>
+                    <p>You will not be able to recover the changes you have made.</p>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-exit" type="button" class="btn btn-danger" data-dismiss="modal">Exit</button>
+                    <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @section Scripts
+{
+        <script>
         var edit = false;
         var $focus;
         var history = [$focus];
-
         $('[data-toggle="popover"]').popover();
         $('[data-toggle="popover"]').hover(function () {
             $(this).popover('show');
@@ -121,13 +176,13 @@
             });
             $obj.change(function () {
                 if (!$obj.text()) {
-
                 }
-            })
+            });
         }
 
         function paraInsert($target) {
             var $newPara = $('<div class="paragraph"></div>');
+            console.log($newPara);
             $newPara.insertBefore($target);
             BalloonEditor.
                 create($newPara.get(0), {
@@ -141,25 +196,51 @@
             if (edit)
                 return;
             $(this).fadeOut(250, () => $(".editToolbar").fadeIn(250));
-            $("#view").addClass("paragraph");
-            $("#editcontent").append($("#view"));
-            $(".paragraph").each(function () {
+            if ($("#view > .tempintro").length == 1) {
+                paraInsert($(".tempintro"));
+                $(".tempintro").remove();
+            }
+            else {
+                $(".paragraph").each(function () {
                 BalloonEditor.
                     create(this, {
                     placeholder: "Click to edit the paragraph"
                     });
-            });
-            paraInit($(".paragraph"));
+                });
+                paraInit($(".paragraph"));
+            }
         });
+        //用户点击保存按钮事件
         $("#btn-save").mousedown(function () {
+            //判断上一个保存请求是否完成
             if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
                 return;
+            //将编辑器元素从
+            var $content = $("#view").clone();
+            $content.hide();
+            $content.find("#toolbar").remove();
+            $content.find(".ck-placeholder").remove();
+            $content.children().each((index, element) => {
+                while (element.attributes.length > 0)
+                {
+                    element.removeAttribute(element.attributes[0].name);
+                }
+                $(element).attr("class", "paragraph");
+            });
+            $content.find("*[data-placeholder]").removeAttr("data-placeholder");
+            var postData = {
+                "UniqueTitle":"@Model.PageEntry.UniqueTitle",
+                "BasicClassID":@Model.PageEntry.BasicClassID,
+                "DisplayTitle":"@Model.PageEntry.DisplayTitle",
+                "PageContent": $content.html()
+            };
+
             $.ajax({
-                url: '/Pedia/@RouteData.Values["title"]?handler=Save',
+                url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=Save',
                 type: "POST",
                 dataType: "json",
-                contentType: "text/plain; charset=utf-8",
-                data: $("#editcontent").text(),
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(postData),
                 beforeSend: (xhr) => {
                     xhr.setRequestHeader("XSRF-TOKEN",
                         $("input:hidden[name=__RequestVerificationToken]").val());
@@ -168,25 +249,77 @@
                     console.log("error");
                 },
                 success: function (data) {
-                    if (data["lineAffect"] != null)
-                        console.log(data["lineAffect"]);
+                    console.log(data);
+                    if (data[0] == 1) {
+                        console.log(data[0]);
+                    }
                 },
                 complete: () => {
+                    $("#modal-save").modal("hide");
                     $(this).data("isCompleted", true);
                 }
             })
         });
+        //用户点击退出事件
+        $("#btn-exit").mousedown(function () {
+                location.reload();
+        });
+        $("#btn-settings").mousedown(function () {
+            //判断上一个保存请求是否完成
+            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
+                return;
+            var postData = {
+                "DisplayTitle": ($("#DisplayTitle").val().trim()!="")?$("#DisplayTitle").val().trim():"@Model.PageEntry.DisplayTitle",
+                "BasicClassID": $('#BasicClass').val(),
+                "UniqueTitle": "@Model.PageEntry.UniqueTitle"
+            };
+            console.log(postData, JSON.stringify(postData));
+            $.post({
+                url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=SaveSettings',
+                data: JSON.stringify(postData),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: (xhr) => {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $("input:hidden[name=__RequestVerificationToken]").val());
+                },
+                error: function () {
+                    console.log("setting error")
+                },
+                success: function (data) {
+                    console.log(data);
+                    switch (data) {
+                        case "1":
+                            $("#page-title").text(postData.DisplayTitle);
+                            var text = $("#BasicClass > option").eq(postData.BasicClassID).text();
+                            if (text != "None")
+                                $("#page-basic-class-title").text(text);
+                            else
+                                $("#page-basic-class-title").text("");
+                                break;
+                        case "100":
+                            break;
+                        default:
+                    }
+                },
+                complete: () => {
+                    $(this).data("isCompleted", true);
+                    $("#modal-settings").modal("hide");
+                }
+            });
+        })
+        //用户点击保存设置事件
         $("#insertline").mousedown(function () {
             paraInsert($("#toolbar"));
         });
         $("#removeline").mousedown(function () {
-            console.log($("#editcontent > .paragraph").length);
-            if ($("#editcontent > .paragraph").length == 1)
+            if ($("#view > .paragraph").length == 1)
                 paraInsert($("#toolbar"));
             if ($focus != undefined && $focus != null) {
 
             }
-            $focus.fadeOut(200);
+            $focus.fadeOut(200, function () {
+                $(this).appendTo($("#trashpara"));
+            });
         });
-    </script>
-}
+        </script>
+    }
