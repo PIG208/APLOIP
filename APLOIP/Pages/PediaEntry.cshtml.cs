@@ -115,7 +115,20 @@ namespace APLOIP.Pages
                 else
                     return new JsonResult(JsonConvert.SerializeObject(0));
             }
-
+            //变量验证
+            if (BasicClasses.Find(basicClassObj => basicClassObj.ID == PageEntry.BasicClassID) == null)
+            {
+                PageEntry.BasicClassID = 0;
+            }
+            else
+            {
+                if (IsBasicEntry(PageEntry))
+                {
+                    PageEntry.BasicClassID = BasicClasses.Find(basicClassObj => basicClassObj.UniqueTitle == PageEntry.UniqueTitle).ID;
+                }
+            }
+            PageEntry.PageContent = PageEntry.PageContent.Replace("\\", "\\\\");
+            PageEntry.PageContent = PageEntry.PageContent.Replace("\'","\\\'");
             string[] keySelect = { "title_unique" };
             MySqlIntegration postInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
             postInteg.MySqlSelect("entries", keySelect, "title_unique=" + MySqlIntegration.QuoteStr(PageEntry.UniqueTitle));

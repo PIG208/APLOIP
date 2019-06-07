@@ -123,7 +123,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button id="btn-settings" type="button" class="btn btn-info">Save</button>
+                    <button id="btn-settings" type="button" class="btn btn-info">Apply</button>
                     <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -140,8 +140,7 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure to discard all the changes and exit? </p>
-                    <p>You will not be able to recover the changes you have made.</p>
+                    <p>Are you sure to discard all the unsaved changes and exit? </p>
                 </div>
                 <div class="modal-footer">
                     <button id="btn-exit" type="button" class="btn btn-danger" data-dismiss="modal">Exit</button>
@@ -152,174 +151,149 @@
     </div>
     @section Scripts
 {
-        <script>
-        var edit = false;
-        var $focus;
-        var history = [$focus];
-        $('[data-toggle="popover"]').popover();
-        $('[data-toggle="popover"]').hover(function () {
-            $(this).popover('show');
+<script>
+    var edit = false;
+    var $focus;
+    var history = [$focus];
+    $('[data-toggle="popover"]').popover();
+    $('[data-toggle="popover"]').hover(function () {
+        $(this).popover('show');
+    });
+    $('[data-toggle="popover"]').mouseleave(function () {
+        $(this).popover('hide');
+    });
+
+    function paraInit($obj) {
+        $obj.focusin(function () {
+            $focus = $(this);
+            $("#toolbar").insertAfter($(this));
+            $("#toolbar").finish().fadeIn(200);
         });
-        $('[data-toggle="popover"]').mouseleave(function () {
-            $(this).popover('hide');
+        $obj.focusout(function () {
+            //$focus = undefined;
+            $("#toolbar").finish().fadeOut(200);
         });
-
-        function paraInit($obj) {
-            $obj.focusin(function () {
-                $focus = $(this);
-                $("#toolbar").insertAfter($(this));
-                $("#toolbar").finish().fadeIn(200);
-            });
-            $obj.focusout(function () {
-                //$focus = undefined;
-                $("#toolbar").finish().fadeOut(200);
-            });
-            $obj.change(function () {
-                if (!$obj.text()) {
-                }
-            });
-        }
-
-        function paraInsert($target) {
-            var $newPara = $('<div class="paragraph"></div>');
-            console.log($newPara);
-            $newPara.insertBefore($target);
-            BalloonEditor.
-                create($newPara.get(0), {
-                    placeholder: "Click to edit the paragraph"
-                });
-            paraInit($newPara);
-            $newPara.slideDown(50);
-        }
-
-        $("#btn-edit").mousedown(function () {
-            if (edit)
-                return;
-            $(this).fadeOut(250, () => $(".editToolbar").fadeIn(250));
-            if ($("#view > .tempintro").length == 1) {
-                paraInsert($(".tempintro"));
-                $(".tempintro").remove();
-            }
-            else {
-                $(".paragraph").each(function () {
-                BalloonEditor.
-                    create(this, {
-                    placeholder: "Click to edit the paragraph"
-                    });
-                });
-                paraInit($(".paragraph"));
+        $obj.change(function () {
+            if (!$obj.text()) {
             }
         });
-        //用户点击保存按钮事件
-        $("#btn-save").mousedown(function () {
-            //判断上一个保存请求是否完成
-            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
-                return;
-            //将编辑器元素从
-            var $content = $("#view").clone();
-            $content.hide();
-            $content.find("#toolbar").remove();
-            $content.find(".ck-placeholder").remove();
-            $content.children().each((index, element) => {
-                while (element.attributes.length > 0)
-                {
-                    element.removeAttribute(element.attributes[0].name);
-                }
-                $(element).attr("class", "paragraph");
-            });
-            $content.find("*[data-placeholder]").removeAttr("data-placeholder");
-            var postData = {
-                "UniqueTitle":"@Model.PageEntry.UniqueTitle",
-                "BasicClassID":@Model.PageEntry.BasicClassID,
-                "DisplayTitle":"@Model.PageEntry.DisplayTitle",
-                "PageContent": $content.html()
-            };
-
-            $.ajax({
-                url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=Save',
-                type: "POST",
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(postData),
-                beforeSend: (xhr) => {
-                    xhr.setRequestHeader("XSRF-TOKEN",
-                        $("input:hidden[name=__RequestVerificationToken]").val());
-                },
-                error: function () {
-                    console.log("error");
-                },
-                success: function (data) {
-                    console.log(data);
-                    if (data[0] == 1) {
-                        console.log(data[0]);
-                    }
-                },
-                complete: () => {
-                    $("#modal-save").modal("hide");
-                    $(this).data("isCompleted", true);
-                }
-            })
-        });
-        //用户点击退出事件
-        $("#btn-exit").mousedown(function () {
-                location.reload();
-        });
-        $("#btn-settings").mousedown(function () {
-            //判断上一个保存请求是否完成
-            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
-                return;
-            var postData = {
-                "DisplayTitle": ($("#DisplayTitle").val().trim()!="")?$("#DisplayTitle").val().trim():"@Model.PageEntry.DisplayTitle",
-                "BasicClassID": $('#BasicClass').val(),
-                "UniqueTitle": "@Model.PageEntry.UniqueTitle"
-            };
-            console.log(postData, JSON.stringify(postData));
-            $.post({
-                url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=SaveSettings',
-                data: JSON.stringify(postData),
-                contentType: "application/json; charset=utf-8",
-                beforeSend: (xhr) => {
-                    xhr.setRequestHeader("XSRF-TOKEN",
-                        $("input:hidden[name=__RequestVerificationToken]").val());
-                },
-                error: function () {
-                    console.log("setting error")
-                },
-                success: function (data) {
-                    console.log(data);
-                    switch (data) {
-                        case "1":
-                            $("#page-title").text(postData.DisplayTitle);
-                            var text = $("#BasicClass > option").eq(postData.BasicClassID).text();
-                            if (text != "None")
-                                $("#page-basic-class-title").text(text);
-                            else
-                                $("#page-basic-class-title").text("");
-                                break;
-                        case "100":
-                            break;
-                        default:
-                    }
-                },
-                complete: () => {
-                    $(this).data("isCompleted", true);
-                    $("#modal-settings").modal("hide");
-                }
-            });
-        })
-        //用户点击保存设置事件
-        $("#insertline").mousedown(function () {
-            paraInsert($("#toolbar"));
-        });
-        $("#removeline").mousedown(function () {
-            if ($("#view > .paragraph").length == 1)
-                paraInsert($("#toolbar"));
-            if ($focus != undefined && $focus != null) {
-
-            }
-            $focus.fadeOut(200, function () {
-                $(this).appendTo($("#trashpara"));
-            });
-        });
-        </script>
     }
+
+    function paraInsert($target) {
+        var $newPara = $('<div class="paragraph"></div>');
+        console.log($newPara);
+        $newPara.insertBefore($target);
+        BalloonEditor.
+            create($newPara.get(0), {
+                placeholder: "Click to edit the paragraph"
+            });
+        paraInit($newPara);
+        $newPara.slideDown(50);
+    }
+
+    $("#btn-edit").mousedown(function () {
+        if (edit)
+            return;
+        $(this).fadeOut(250, () => $(".editToolbar").fadeIn(250));
+        if ($("#view > .tempintro").length == 1) {
+            paraInsert($(".tempintro"));
+            $(".tempintro").remove();
+        }
+        else {
+            $(".paragraph").each(function () {
+            BalloonEditor.
+                create(this, {
+                placeholder: "Click to edit the paragraph"
+                });
+            });
+            paraInit($(".paragraph"));
+        }
+    });
+    //用户点击保存按钮事件
+    $("#btn-save").mousedown(function () {
+        //判断上一个保存请求是否完成
+        if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
+            return;
+        //将编辑器元素从
+        var $content = $("#view").clone();
+        $content.hide();
+        $content.find("#toolbar").remove();
+        $content.find(".ck-placeholder").remove();
+        $content.children().each((index, element) => {
+            while (element.attributes.length > 0)
+            {
+                element.removeAttribute(element.attributes[0].name);
+            }
+            $(element).attr("class", "paragraph");
+        });
+        $content.find("*[data-placeholder]").removeAttr("data-placeholder");
+        var postData = {
+            "UniqueTitle":"@Model.PageEntry.UniqueTitle",
+            "BasicClassID":$('#BasicClass').val(),
+            "DisplayTitle":($("#DisplayTitle").val().trim()!="")?$("#DisplayTitle").val().trim():"@Model.PageEntry.DisplayTitle",
+            "PageContent": $content.html()
+        };
+
+        $.ajax({
+            url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=Save',
+            type: "POST",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(postData),
+            beforeSend: (xhr) => {
+                xhr.setRequestHeader("XSRF-TOKEN",
+                    $("input:hidden[name=__RequestVerificationToken]").val());
+            },
+            error: function () {
+                console.log("error");
+            },
+            success: function (data) {
+                console.log(data);
+                if (data[0] == 1) {
+                    console.log(data[0]);
+                }
+            },
+            complete: () => {
+                $("#modal-save").modal("hide");
+                $(this).data("isCompleted", true);
+            }
+        })
+    });
+    //用户点击退出事件
+    $("#btn-exit").mousedown(function () {
+            location.reload();
+    });
+    function saveSettings() {
+        $("#page-title").text(($("#DisplayTitle").val().trim() != "")?$("#DisplayTitle").val().trim():"@Model.PageEntry.DisplayTitle");
+        var text = $("#BasicClass > option").eq($('#BasicClass').val()).text();
+        if (text != "None") {
+            $("#page-basic-class-title").text(text);
+        }
+        else {
+            $("#page-basic-class-title").text("");
+        }
+        $("#modal-settings").modal("hide");
+    }
+    $("#settings").submit(function (e) {
+        e.preventDefault();
+        saveSettings();
+    });
+    $("#btn-settings").mousedown(function () {
+        saveSettings();
+    });
+    //用户点击保存设置事件
+    $("#insertline").mousedown(function () {
+        paraInsert($("#toolbar"));
+    });
+    $("#removeline").mousedown(function () {
+        if ($("#view > .paragraph").length == 1)
+            paraInsert($("#toolbar"));
+        if ($focus != undefined && $focus != null) {
+
+        }
+        $focus.fadeOut(200, function () {
+            $(this).appendTo($("#trashpara"));
+        });
+    });
+    </script>
+}
