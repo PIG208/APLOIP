@@ -10,11 +10,8 @@ namespace MySql.Data.MySqlClient
     {
         //private static readonly string connStr = ;
         private readonly MySqlConnection connection;
-        private string queryString;
-        public string QueryString
-        {
-            get { return queryString; }
-        }
+
+        public string QueryString { get; private set; }
 
         public List<Dictionary<string, object>> IntegratedResult { get; private set; }
 
@@ -68,7 +65,7 @@ namespace MySql.Data.MySqlClient
             string queryStr = "SELECT {0} FROM {1} {2}";
             queryStr = string.Format(queryStr, MakeStr(keys, ignore: true), table, (specifier != null && specifier.Trim() != "") ? "WHERE " + specifier : "");
             MySqlDataReader mySqlDataReader;
-            queryString = queryStr;
+            QueryString = queryStr;
             try
             {
                 MySqlCommand mySqlCommand = new MySqlCommand(queryStr, connection);
@@ -98,7 +95,7 @@ namespace MySql.Data.MySqlClient
             string queryStr = "INSERT INTO {0} ({1}) VALUES ({2})";
             queryStr = string.Format(queryStr, table, MakeStr(keys, ignore: true), MakeStr(vals));
             MySqlDataReader mySqlDataReader;
-            queryString = queryStr;
+            QueryString = queryStr;
             try
             {
                 MySqlCommand mySqlCommand = new MySqlCommand(queryStr, connection);
@@ -135,7 +132,7 @@ namespace MySql.Data.MySqlClient
             kvpsStr = kvpsStr.Substring(0, kvpsStr.Length - 1);
             queryStr = string.Format(queryStr, table, kvpsStr, (specifier != null && specifier.Trim() != "") ? "WHERE " + specifier : "");
             MySqlDataReader mySqlDataReader = null;
-            queryString = queryStr;
+            QueryString = queryStr;
             System.Diagnostics.Debug.WriteLine(queryStr);
             try
             {
@@ -165,7 +162,7 @@ namespace MySql.Data.MySqlClient
             string queryStr = "DELETE FROM {0} {1}";
             queryStr = string.Format(queryStr, table, (specifier != null && specifier.Trim() != "") ? "WHERE " + specifier : "");
             MySqlDataReader mySqlDataReader;
-            queryString = queryStr;
+            QueryString = queryStr;
             try
             {
                 MySqlCommand mySqlCommand = new MySqlCommand(queryStr, connection);
@@ -184,6 +181,26 @@ namespace MySql.Data.MySqlClient
             //return mySqlDataReader;
         }
 
+        public List<Dictionary<string, object>> MySqlQuery(string queryStr)
+        {
+            if (connection.State == ConnectionState.Open) return null;
+            AlterConnection(true);
+            MySqlDataReader mySqlDataReader;
+            QueryString = queryStr;
+            try
+            {
+                MySqlCommand mySqlCommand = new MySqlCommand(queryStr, connection);
+                mySqlDataReader = mySqlCommand.ExecuteReader();
+            }
+            catch(MySqlException e)
+            {
+                throw e;
+            }
+            List<Dictionary<string, object>> result = GetResult(mySqlDataReader);
+            mySqlDataReader.Close();
+            AlterConnection(false);
+            return result;
+        }
         /**
          * 将MySqlDataReader对象读取为二维数组
          * */

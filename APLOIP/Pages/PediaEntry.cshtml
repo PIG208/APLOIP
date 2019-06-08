@@ -53,7 +53,7 @@
 <button type="button" class="btn btn-light editToolbar" data-toggle="modal" data-target="#modal-settings">Settings</button>
 <button type="button" class="btn btn-info editToolbar" data-toggle="modal" data-target="#modal-save">Save</button>
 
-<h1 id="page-title">@Model.PageEntry.DisplayTitle</h1>
+<h1 id="page-title">@Html.DisplayFor(model => model.PageEntry.DisplayTitle)</h1>
 <hr />
 @if (!Model.IsBasicEntry(Model.PageEntry))
 {
@@ -61,94 +61,94 @@
     @PediaEntryModel.BasicClasses.Find(basicClassObj => basicClassObj.ID == Model.PageEntry.BasicClassID)?.DisplayTitle
 </h2>
 }
-    <div id="view">
-        @Html.Raw(Model.PageEntry.PageContent)
-    </div>
+<div id="view">
+    @Html.Raw(Model.PageEntry.PageContent)
+</div>
 
-    <div id="popper"></div>
-    <div id="trashpara"></div>
-    <span id="toolbar">
-        <button type="button" id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph" class="btn btn-light"><span class="fa fa-plus"></span></button>
-        <button type="button" id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph" class="btn btn-light"><span class="fa fa-minus"></span></button>
-    </span>
-    <div id="modal-save" class="modal fade" role="dialog" aria-labelledby="Save the changes" aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">
-                        <h5>Save</h5>
-                    </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<div id="popper"></div>
+<div id="trashpara"></div>
+<span id="toolbar">
+    <button type="button" id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph" class="btn btn-light"><span class="fa fa-plus"></span></button>
+    <button type="button" id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph" class="btn btn-light"><span class="fa fa-minus"></span></button>
+</span>
+<div id="modal-save" class="modal fade" role="dialog" aria-labelledby="Save the changes" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h5>Save</h5>
                 </div>
-                <div class="modal-body">
-                    <p>Are you sure to save all changes you have made to this entry?</p>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-save" type="button" class="btn btn-info">Save</button>
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
-                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure to save all changes you have made to this entry?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-save" type="button" class="btn btn-info">Save</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="modal-settings" class="modal fade" role="dialog" aria-labelledby="Settings" aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">
-                        <h5>Settings</h5>
-                    </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+<div id="modal-settings" class="modal fade" role="dialog" aria-labelledby="Settings" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h5>Settings</h5>
                 </div>
-                <div class="modal-body">
-                    <form id="settings">
-                        <div class="form-group">
-                            <label for="DisplayTitle">DisplayTitle</label>
-                            <input id="DisplayTitle" name="DisplayTitle" type="text" class="form-control" placeholder="@Model.PageEntry.DisplayTitle" value="@Model.PageEntry.DisplayTitle" />
-                        </div>
-                        <div class="form-group">
-                            <label for="BasicClass">BasicClass</label>
-                            <select id="BasicClass" class="form-control" value="@Model.PageEntry.BasicClassID"
-                                    @if (Model.IsBasicEntry(Model.PageEntry)) { @Html.Raw("disabled") }>
-                                <option value="0">None</option>
-                                @if (PediaEntryModel.BasicClasses.Count > 0)
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="settings">
+                    <div class="form-group">
+                        <label for="DisplayTitle">DisplayTitle</label>
+                        <input id="DisplayTitle" name="DisplayTitle" type="text" class="form-control" placeholder="@Model.PageEntry.DisplayTitle" value="@Model.PageEntry.DisplayTitle" />
+                    </div>
+                    <div class="form-group">
+                        <label for="BasicClass">BasicClass</label>
+                        <select id="BasicClass" class="form-control" value="@Model.PageEntry.BasicClassID"
+                                @if (Model.IsBasicEntry(Model.PageEntry)) { @Html.Raw("disabled") }>
+                            <option value="0">None</option>
+                            @if (PediaEntryModel.BasicClasses.Count > 0)
+                            {
+                                @foreach (BasicClass basicClass in PediaEntryModel.BasicClasses)
                                 {
-                                    @foreach (BasicClass basicClass in PediaEntryModel.BasicClasses)
-                                    {
-                                        @Html.Raw("<option value=" + basicClass.ID + ((Model.PageEntry.BasicClassID == basicClass.ID) ? " selected" : "") + ">" + @basicClass.DisplayTitle + "</option>")
-                                    }
+                                    @Html.Raw("<option value=" + basicClass.ID + ((Model.PageEntry.BasicClassID == basicClass.ID) ? " selected" : "") + ">" + @basicClass.DisplayTitle + "</option>")
                                 }
-                            </select>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-settings" type="button" class="btn btn-info">Apply</button>
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-exit" class="modal fade" role="dialog" aria-labelledby="Discard the changes and exit" aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div class="modal-title">
-                        <h5>Exit</h5>
+                            }
+                        </select>
                     </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure to discard all the unsaved changes and exit? </p>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-exit" type="button" class="btn btn-danger" data-dismiss="modal">Exit</button>
-                    <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
-                </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-settings" type="button" class="btn btn-info">Apply</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
+
+<div id="modal-exit" class="modal fade" role="dialog" aria-labelledby="Discard the changes and exit" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h5>Exit</h5>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure to discard all the unsaved changes and exit? </p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-exit" type="button" class="btn btn-danger" data-dismiss="modal">Exit</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
     @section Scripts
 {
 <script>

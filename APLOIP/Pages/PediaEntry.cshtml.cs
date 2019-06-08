@@ -9,7 +9,7 @@ using System.IO;
 
 namespace APLOIP.Pages
 {
-    public class PediaEntryModel : PageModel
+    public partial class PediaEntryModel : PageModel
     {
         public PediaEntryModel(IConfiguration configuration)
         {
@@ -73,35 +73,6 @@ namespace APLOIP.Pages
                 }
             }
         }
-
-        public ActionResult OnPostSaveSettings()
-        {
-            MemoryStream memoryStream = new MemoryStream();
-            Request.Body.CopyTo(memoryStream);
-            memoryStream.Position = 0;
-            Entry settings;
-            using (StreamReader streamReader = new StreamReader(memoryStream))
-            {
-                string result = streamReader.ReadToEnd();
-                if (result.Length > 0 || !result.Trim().Equals(""))
-                    settings = JsonConvert.DeserializeObject<Entry>(result);
-                else
-                    return new JsonResult(JsonConvert.SerializeObject(State.INVAILD_DATA));
-            }
-            MySqlIntegration updateInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
-            string[] updateKeys = { "title_display", "basic_class_ID" };
-            string[] selectKey = { "title_unique" };
-            //判断该词条是否为基础类词条
-            if (IsBasicEntry(settings))
-            {
-                settings.BasicClassID = BasicClasses.Find(basicClassObj => basicClassObj.UniqueTitle == settings.UniqueTitle).ID;
-            }
-            if(updateInteg.MySqlSelect("entries", selectKey, "title_unique=" + MySqlIntegration.QuoteStr(settings.UniqueTitle)).Count > 0)
-                return new JsonResult(JsonConvert.SerializeObject((updateInteg.MySqlUpdate("entries", updateKeys, "title_unique=" + MySqlIntegration.QuoteStr(settings.UniqueTitle), settings.DisplayTitle, settings.BasicClassID)==1)?State.SUCCESS:State.NO_CHANGE));
-            else
-                return new JsonResult(JsonConvert.SerializeObject(State.NO_RECORD));
-        }
-
         public ActionResult OnPostSave()
         {
             MemoryStream memoryStream = new MemoryStream();
@@ -148,32 +119,6 @@ namespace APLOIP.Pages
         public bool IsBasicEntry(Entry entry)
         {
             return BasicClasses.Find(basicClassObj => basicClassObj.UniqueTitle == entry.UniqueTitle) != null;
-        }
-        public class Entry
-        {
-            public string DisplayTitle { get; set; }
-            public string UniqueTitle { get; set; }
-            public string PageContent { get; set; }
-            public int BasicClassID { get; set; }
-            public DateTime CreationTime { get; set; }
-            public DateTime ModificationTime { get; set; }
-
-        }
-
-        public enum Permission
-        {
-            ALL = 0,
-            USER = 2,
-            ADMIN = 4,
-            SUPER = 8
-        }
-
-        public enum State
-        {
-            SUCCESS = 1,
-            NO_RECORD = 100,
-            NO_CHANGE = 101,
-            INVAILD_DATA = 200
         }
     }
 }
