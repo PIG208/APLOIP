@@ -6,16 +6,23 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
 
 namespace APLOIP.Pages
 {
     public partial class PediaEntryModel : PageModel
     {
-        public PediaEntryModel(IConfiguration configuration)
+        public PediaEntryModel(IConfiguration configuration, IHostingEnvironment environment)
         {
+            Environment = environment;
             Configuration = configuration;
         }
+        IHostingEnvironment Environment { get; set; }
         IConfiguration Configuration { get; }
+
         public static List<BasicClass> BasicClasses { get; set; }
         public Entry PageEntry { get; set; }
 
@@ -71,6 +78,23 @@ namespace APLOIP.Pages
                 {
                     PageEntry.DisplayTitle = PageEntry.UniqueTitle;
                 }
+            }
+        }
+
+        public JsonResult OnPostSaveImage(string UniqueTitle, IFormFile ImageUpload)
+        {
+            //IFormFile formFile = (IFormFile)Request.Form["upload"][0];
+            System.Diagnostics.Debug.WriteLine(ImageUpload.FileName);
+            System.Diagnostics.Debug.WriteLine(Environment.ContentRootPath);
+            Directory.CreateDirectory(Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle));
+            var fileName = DateTime.Now.ToString("yyyy-MM-dd HHmmss") + Path.GetFileName(ImageUpload.FileName);
+            var file = Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle, fileName);
+            Dictionary<string, object> res = new Dictionary<string, object>();
+            res.Add("Path", Path.Combine(UniqueTitle, fileName));
+            using (var fileStream = new FileStream(file, FileMode.Create))
+            {
+                ImageUpload.CopyToAsync(fileStream);
+                return new JsonResult(JsonConvert.SerializeObject(res));
             }
         }
         public ActionResult OnPostSave()

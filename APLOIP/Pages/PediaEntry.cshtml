@@ -57,9 +57,9 @@
 <hr />
 @if (!Model.IsBasicEntry(Model.PageEntry))
 {
-<h2 id="page-basic-class-title">
-    @PediaEntryModel.BasicClasses.Find(basicClassObj => basicClassObj.ID == Model.PageEntry.BasicClassID)?.DisplayTitle
-</h2>
+    <h2 id="page-basic-class-title">
+        @PediaEntryModel.BasicClasses.Find(basicClassObj => basicClassObj.ID == Model.PageEntry.BasicClassID)?.DisplayTitle
+    </h2>
 }
 <div id="view">
     @Html.Raw(Model.PageEntry.PageContent)
@@ -70,6 +70,7 @@
 <span id="toolbar">
     <button type="button" id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph" class="btn btn-light"><span class="fa fa-plus"></span></button>
     <button type="button" id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph" class="btn btn-light"><span class="fa fa-minus"></span></button>
+    <button type="button" id="insertImage" data-container="body" data-toggle="modal" data-target="#modal-upload-image" data-placement="bottom" data-content="Insert an image" class="btn btn-light"><span class="fa fa-image"></span></button>
 </span>
 <div id="modal-save" class="modal fade" role="dialog" aria-labelledby="Save the changes" aria-hidden="true">
     <div class="modal-dialog modal-sm" role="document">
@@ -129,6 +130,32 @@
         </div>
     </div>
 </div>
+<div id="modal-upload-image" class="modal fade" role="dialog" aria-labelledby="Settings" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h5>Upload</h5>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body overflow-hidden">
+                <form id="image-form" method="post" enctype="multipart/form-data">
+                    <input name="UniqueTitle" value="@Model.PageEntry.UniqueTitle" hidden="hidden"/>
+                    <div class="form-group">
+                        <label for="UploadSelect">Upload an image</label>
+                        <input id="UploadSelect" name="ImageUpload" type="file" class="btn btn-light"/>
+                    </div>
+                </form>
+                <img id="image-preview" style="position:relative;width:100%"/>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-upload" type="button" class="btn btn-info">Upload</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="modal-exit" class="modal fade" role="dialog" aria-labelledby="Discard the changes and exit" aria-hidden="true">
     <div class="modal-dialog modal-sm" role="document">
@@ -149,9 +176,10 @@
         </div>
     </div>
 </div>
-    @section Scripts
+@section Scripts
 {
-<script>
+    <script src="~/js/CustomUploadAdapter.js"></script>
+    <script>
     var edit = false;
     var $focus;
     var history = [$focus];
@@ -203,7 +231,8 @@
             $(".paragraph").each(function () {
             BalloonEditor.
                 create(this, {
-                placeholder: "Click to edit the paragraph"
+                    placeholder: "Click to edit the paragraph",
+                    extraPlugins: [ MyCustomUploadAdapterPlugin ]
                 });
             });
             paraInit($(".paragraph"));
@@ -294,6 +323,30 @@
         $focus.fadeOut(200, function () {
             $(this).appendTo($("#trashpara"));
         });
+    });
+        $("#btn-upload").mousedown(function () {
+            var formData = new FormData($("#image-form")[0]);
+            //formData.append("UniqueTitle", "@Model.PageEntry.UniqueTitle");
+            $.ajax({
+                url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=SaveImage',
+                type: "post",
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType:"application/json; charset=utf-8",
+                beforeSend: (xhr) => {
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $("input:hidden[name=__RequestVerificationToken]").val());
+                },
+                success: function (data) {
+                    data = JSON.parse(JSON.parse(data.responseText));
+                    console.log(data);
+                    $("#image-preview").attr("src",data["Path"]);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
     });
     </script>
 }
