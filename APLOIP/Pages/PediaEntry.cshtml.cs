@@ -80,12 +80,13 @@ namespace APLOIP.Pages
                 }
             }
         }
-
-        public JsonResult OnPostSaveImage(string UniqueTitle, IFormFile ImageUpload)
+        public IFormFile ImageUpload { get; set; }
+        public JsonResult OnPostSaveImage(string UniqueTitle)
         {
             //IFormFile formFile = (IFormFile)Request.Form["upload"][0];
-            System.Diagnostics.Debug.WriteLine(ImageUpload.FileName);
-            System.Diagnostics.Debug.WriteLine(Environment.ContentRootPath);
+            System.Diagnostics.Debug.WriteLine("==============================");
+            System.Diagnostics.Debug.WriteLine("name: " + ImageUpload.FileName);
+            System.Diagnostics.Debug.WriteLine("size: " + ImageUpload.Length);
             Directory.CreateDirectory(Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle));
             var fileName = DateTime.Now.ToString("yyyy-MM-dd HHmmss") + Path.GetFileName(ImageUpload.FileName);
             var file = Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle, fileName);
@@ -93,8 +94,8 @@ namespace APLOIP.Pages
             res.Add("Path", Path.Combine(UniqueTitle, fileName));
             using (var fileStream = new FileStream(file, FileMode.Create))
             {
-                ImageUpload.CopyToAsync(fileStream);
-                return new JsonResult(JsonConvert.SerializeObject(res));
+                ImageUpload.CopyTo(fileStream);
+                return new JsonResult(JsonConvert.SerializeObject(Path.Combine("/", "uploads", UniqueTitle, fileName)));
             }
         }
         public ActionResult OnPostSave()

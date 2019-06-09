@@ -130,7 +130,7 @@
         </div>
     </div>
 </div>
-<div id="modal-upload-image" class="modal fade" role="dialog" aria-labelledby="Settings" aria-hidden="true">
+<div id="modal-upload-image" class="modal fade" role="dialog" aria-labelledby="UploadImage" aria-hidden="true">
     <div class="modal-dialog modal-sm" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -140,14 +140,25 @@
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body overflow-hidden">
-                <form id="image-form" method="post" enctype="multipart/form-data">
-                    <input name="UniqueTitle" value="@Model.PageEntry.UniqueTitle" hidden="hidden"/>
-                    <div class="form-group">
-                        <label for="UploadSelect">Upload an image</label>
-                        <input id="UploadSelect" name="ImageUpload" type="file" class="btn btn-light"/>
+                <div class="btn-group mx-auto">
+                    <button id="btn-sec-upload" class="btn btn-primary">Upload</button>
+                    <button id="btn-sec-browse" class="btn btn-outline-primary">Browse</button>
+                </div>
+                <div>
+                    <div id="modal-sec-upload" class="collapse show">
+                        <form id="image-form" method="post" enctype="multipart/form-data">
+                            <input name="UniqueTitle" value="@Model.PageEntry.UniqueTitle" hidden="hidden" />
+                            <div class="custom-file">
+                                <input id="upload-select" asp-for="ImageUpload" type="file" class="custom-file-input" />
+                                <label class="custom-file-label" for="upload-select">Upload an image</label>
+                            </div>
+                        </form>
+                        <img id="image-preview" style="position:relative;width:100%" />
                     </div>
-                </form>
-                <img id="image-preview" style="position:relative;width:100%"/>
+                    <div id="modal-sec-browse" class="collapse">
+                        <div>nothing</div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button id="btn-upload" type="button" class="btn btn-info">Upload</button>
@@ -178,7 +189,6 @@
 </div>
 @section Scripts
 {
-    <script src="~/js/CustomUploadAdapter.js"></script>
     <script>
     var edit = false;
     var $focus;
@@ -231,8 +241,7 @@
             $(".paragraph").each(function () {
             BalloonEditor.
                 create(this, {
-                    placeholder: "Click to edit the paragraph",
-                    extraPlugins: [ MyCustomUploadAdapterPlugin ]
+                    placeholder: "Click to edit the paragraph"
                 });
             });
             paraInit($(".paragraph"));
@@ -324,26 +333,42 @@
             $(this).appendTo($("#trashpara"));
         });
     });
+        $("#btn-sec-upload").mousedown(function () {
+            $("#modal-sec-upload").collapse('show');
+            $("#modal-sec-browse").collapse('hide');
+        })
+        $("#btn-sec-browse").mousedown(function () {
+            $("#modal-sec-upload").collapse('hide');
+            $("#modal-sec-browse").collapse('show');
+        })
+        $("#upload-select").change(function (e) {
+            $("#image-preview").attr("src",URL.createObjectURL(this.files[0]));
+            var fileName = $(this).val();
+            $(this).next('.custom-file-label').html(fileName.replace("C:\\fakepath\\",""));
+        })
         $("#btn-upload").mousedown(function () {
             var formData = new FormData($("#image-form")[0]);
-            //formData.append("UniqueTitle", "@Model.PageEntry.UniqueTitle");
+            formData.append("UniqueTitle", "@Model.PageEntry.UniqueTitle");
             $.ajax({
                 url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=SaveImage',
                 type: "post",
                 data: formData,
                 processData: false,
                 contentType: false,
-                dataType:"application/json; charset=utf-8",
+                dataType: "json",
                 beforeSend: (xhr) => {
+                    console.log(formData);
                     xhr.setRequestHeader("XSRF-TOKEN",
                         $("input:hidden[name=__RequestVerificationToken]").val());
                 },
                 success: function (data) {
-                    data = JSON.parse(JSON.parse(data.responseText));
-                    console.log(data);
-                    $("#image-preview").attr("src",data["Path"]);
+                    var res = JSON.parse(data);
+                    console.log(res);
+                    $("#image-preview").attr("src",res);
                 },
                 error: function (error) {
+                    var res = JSON.parse(error);
+                    console.log(res);
                     console.log(error);
                 }
             });
