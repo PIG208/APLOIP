@@ -1,0 +1,94 @@
+﻿@page "/Search"
+@model APLOIP.Pages.SearchModel
+@using HtmlAgilityPack
+@using System.Globalization
+@functions{
+    public string addHighlight(string str, string keyword)
+    {
+        return str.Replace(keyword, string.Format("<span class='highlight'>{0}</span>", keyword), true, CultureInfo.CurrentCulture);
+    }
+    public string subPartial(string str, string keyword)
+    {
+        const int totalLength = 250;
+        int index = str.IndexOf(keyword);
+        if (index > 0)
+        {
+            int startIndex = (index - totalLength/2 > 0) ? (index - totalLength/2) : 0;
+            if (startIndex + totalLength < str.Length)
+                return str.Substring(startIndex, totalLength);
+            else
+                return str.Substring(startIndex);
+        }
+        else
+        {
+            if (str.Length > totalLength)
+            {
+                return str.Substring(0, totalLength);
+            }
+            else
+            {
+                return str.Substring(0);
+            }
+        }
+    }
+    public string htmlEscape(string str)
+    {
+        HtmlDocument htmldoc = new HtmlDocument();
+        htmldoc.LoadHtml(str);
+        HtmlNodeCollection nodes = htmldoc.DocumentNode.SelectNodes("//div");
+        string result = string.Empty;
+        foreach(var node in nodes)
+        {
+            result += node.InnerText;
+        }
+        return result;
+    }
+}
+@{
+    ViewData["title"] = "Search";
+    Func<Entry, object> resultTemplate
+        = @<a class="search-result-box btn btn-outline-info" href="/Pedia/@item.UniqueTitle">
+            <h2><span class="search-result-icon fa fa-@Model.BasicClasses.Find(obj => obj.ID == item.BasicClassID)?.FaIcon"></span>@Html.Raw(addHighlight(item.DisplayTitle, Model.Query))</h2>
+            <p>Pedia/@Html.Raw(addHighlight(item.UniqueTitle, Model.Query))</p>
+            <hr />
+            @*The content with matched query*@
+            <p>@Html.Raw(addHighlight(subPartial(htmlEscape(item.PageContent),Model.Query), Model.Query))</p>
+        </a>;
+}
+<style>
+    .search-result-box {
+        display:block;
+        word-break: break-word;
+        overflow: hidden;
+        text-align: left;
+        min-width:0.5vw;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .search-result-icon {
+        margin-right: 0.5rem;
+        margin-left: 0.5rem;
+    }
+
+    .highlight {
+        color: orange;
+    }
+</style>
+
+<h2>Showing results for @Model.Query</h2>
+<hr />
+<div id="content">
+    <p>
+        @Model.PageLimit of @Model.ResultEntries.Count @if (Model.ResultEntries.Count > 0)
+        {@Html.Raw("results are");
+    }
+    else
+    { @Html.Raw("result is");
+} shown
+    </p>
+    @for (int i = Model.PageNum * Model.ResultLimit; i < Model.PageNum * Model.ResultLimit + Model.PageLimit; i++)
+    {
+        @resultTemplate(Model.ResultEntries[i]);
+    }
+</div>

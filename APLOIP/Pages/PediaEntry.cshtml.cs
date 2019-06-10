@@ -6,16 +6,24 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace APLOIP.Pages
 {
-    public class PediaEntryModel : PageModel
+    public partial class PediaEntryModel : PageModel
     {
-        public PediaEntryModel(IConfiguration configuration)
+        public PediaEntryModel(IConfiguration configuration, IHostingEnvironment environment)
         {
+            Environment = environment;
             Configuration = configuration;
         }
+        IHostingEnvironment Environment { get; set; }
         IConfiguration Configuration { get; }
+
         public static List<BasicClass> BasicClasses { get; set; }
         public Entry PageEntry { get; set; }
 
@@ -73,35 +81,50 @@ namespace APLOIP.Pages
                 }
             }
         }
-
-        public ActionResult OnPostSaveSettings()
+        public IFormFile ImageUpload { get; set; }
+        public JsonResult OnPostSaveImage(string UniqueTitle)
         {
-            MemoryStream memoryStream = new MemoryStream();
-            Request.Body.CopyTo(memoryStream);
-            memoryStream.Position = 0;
-            Entry settings;
-            using (StreamReader streamReader = new StreamReader(memoryStream))
-            {
-                string result = streamReader.ReadToEnd();
-                if (result.Length > 0 || !result.Trim().Equals(""))
-                    settings = JsonConvert.DeserializeObject<Entry>(result);
-                else
-                    return new JsonResult(JsonConvert.SerializeObject(State.INVAILD_DATA));
-            }
-            MySqlIntegration updateInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
-            string[] updateKeys = { "title_display", "basic_class_ID" };
-            string[] selectKey = { "title_unique" };
-            //判断该词条是否为基础类词条
-            if (IsBasicEntry(settings))
-            {
-                settings.BasicClassID = BasicClasses.Find(basicClassObj => basicClassObj.UniqueTitle == settings.UniqueTitle).ID;
-            }
-            if(updateInteg.MySqlSelect("entries", selectKey, "title_unique=" + MySqlIntegration.QuoteStr(settings.UniqueTitle)).Count > 0)
-                return new JsonResult(JsonConvert.SerializeObject((updateInteg.MySqlUpdate("entries", updateKeys, "title_unique=" + MySqlIntegration.QuoteStr(settings.UniqueTitle), settings.DisplayTitle, settings.BasicClassID)==1)?State.SUCCESS:State.NO_CHANGE));
-            else
-                return new JsonResult(JsonConvert.SerializeObject(State.NO_RECORD));
-        }
+            if (ImageUpload == null || ImageUpload.Length == 0)
+                return new JsonResult("");
 
+            //current version of the image uploaded
+            string version = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
+            //The name of image
+            string fileName = Path.GetFileName(ImageUpload.FileName);
+            //The path of the image on the server
+            string localPath = Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle, fileName, version + Path.GetExtension(fileName));
+            //The path of the image from wwwroot
+            string serverPath = Path.Combine(Path.DirectorySeparatorChar.ToString(), "uploads", UniqueTitle, fileName, version + Path.GetExtension(fileName));
+
+            Directory.CreateDirectory(Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle, fileName));
+
+            string[] keys = { "title_unique", "image_name", "version" };
+
+            MySqlIntegration sqlInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
+            sqlInteg.MySqlInsert("images", keys, UniqueTitle, fileName, version);
+            Debug.WriteLine(sqlInteg.QueryString);
+
+            using (var fileStream = new FileStream(localPath, FileMode.Create))
+            {
+                ImageUpload.CopyTo(fileStream);
+                Debug.WriteLine(serverPath);
+                Debug.WriteLine(JsonConvert.SerializeObject(serverPath));
+                return new JsonResult(JsonConvert.SerializeObject(serverPath));
+            }
+        }
+        public JsonResult OnPostFetchImage(string UniqueTitle)
+        {
+            MySqlIntegration sqlInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
+            string[] keys = { "title_unique", "image_name", "max(version)" };
+            sqlInteg.MySqlSelect("images", keys, "title_unique= " + MySqlIntegration.QuoteStr(UniqueTitle) + " GROUP BY image_name");
+            List<string> imgPaths = new List<string>();
+            foreach(var obj in sqlInteg.IntegratedResult)
+            {
+                Debug.WriteLine(obj["max(version)"]);
+                imgPaths.Add(Path.Combine(Path.DirectorySeparatorChar.ToString(), "uploads", UniqueTitle, (string)obj["image_name"], ((DateTime)obj["max(version)"]).ToString("yyyy-MM-dd HH-mm-ss") + Path.GetExtension((string)obj["image_name"])));
+            }
+            return new JsonResult(JsonConvert.SerializeObject(imgPaths));
+        }
         public ActionResult OnPostSave()
         {
             MemoryStream memoryStream = new MemoryStream();
@@ -115,7 +138,20 @@ namespace APLOIP.Pages
                 else
                     return new JsonResult(JsonConvert.SerializeObject(0));
             }
-
+            //变量验证
+            if (BasicClasses.Find(basicClassObj => basicClassObj.ID == PageEntry.BasicClassID) == null)
+            {
+                PageEntry.BasicClassID = 0;
+            }
+            else
+            {
+                if (IsBasicEntry(PageEntry))
+                {
+                    PageEntry.BasicClassID = BasicClasses.Find(basicClassObj => basicClassObj.UniqueTitle == PageEntry.UniqueTitle).ID;
+                }
+            }
+            PageEntry.PageContent = PageEntry.PageContent.Replace("\\", "\\\\");
+            PageEntry.PageContent = PageEntry.PageContent.Replace("\'","\\\'");
             string[] keySelect = { "title_unique" };
             MySqlIntegration postInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
             postInteg.MySqlSelect("entries", keySelect, "title_unique=" + MySqlIntegration.QuoteStr(PageEntry.UniqueTitle));
@@ -135,32 +171,6 @@ namespace APLOIP.Pages
         public bool IsBasicEntry(Entry entry)
         {
             return BasicClasses.Find(basicClassObj => basicClassObj.UniqueTitle == entry.UniqueTitle) != null;
-        }
-        public class Entry
-        {
-            public string DisplayTitle { get; set; }
-            public string UniqueTitle { get; set; }
-            public string PageContent { get; set; }
-            public int BasicClassID { get; set; }
-            public DateTime CreationTime { get; set; }
-            public DateTime ModificationTime { get; set; }
-
-        }
-
-        public enum Permission
-        {
-            ALL = 0,
-            USER = 2,
-            ADMIN = 4,
-            SUPER = 8
-        }
-
-        public enum State
-        {
-            SUCCESS = 1,
-            NO_RECORD = 100,
-            NO_CHANGE = 101,
-            INVAILD_DATA = 200
         }
     }
 }
