@@ -32,7 +32,16 @@ strong {
     padding-bottom: 3rem;
 }
 .content {
-    padding: 0 19.1vw 0 19.1vw;
+    padding: 0 8.1vw 0 8.1vw;
+    transition: padding 0.5s;
+}
+@media screen and (max-width: 767px) {
+    .content {
+        padding: 0 5vw 0 5vw;
+    }
+    .content-edit {
+        padding-left: 10vw;
+    }
 }
 .card-pedia {
     color: black;

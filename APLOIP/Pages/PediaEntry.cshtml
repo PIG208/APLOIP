@@ -108,6 +108,8 @@
     <button type="button" id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph" class="btn btn-light"><span class="fa fa-plus"></span></button>
     <button type="button" id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph" class="btn btn-light"><span class="fa fa-minus"></span></button>
     <button type="button" id="insertImage" data-container="body" data-toggle="modal" data-target="#modal-upload-image" data-placement="bottom" data-content="Insert an image" class="btn btn-light"><span class="fa fa-image"></span></button>
+    <button type="button" id="upLine" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Move the current paragraph upward" class="btn btn-light"><span class="fa fa-arrow-up"></span></button>
+    <button type="button" id="downLine" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Move the current paragraph downward" class="btn btn-light"><span class="fa fa-arrow-down"></span></button>
 </span>
 <div id="modal-save" class="modal fade" role="dialog" aria-labelledby="Save the changes" aria-hidden="true">
     <div class="modal-dialog modal-sm" role="document">
@@ -279,6 +281,7 @@
         $(this).fadeOut(250, () => $(".editToolbar").fadeIn(250));
             $("#btn-img-insert").hide();
         //若编辑视图中存在 空内容的占位段落，则在初始化的时候将其删除
+        $(".content").addClass("content-edit");
         if ($("#view > .tempintro").length == 1) {
             paraInsert($(".tempintro"));
             $(".tempintro").remove();
@@ -310,7 +313,7 @@
                 while (element.attributes.length > 0) {
                     element.removeAttribute(element.attributes[0].name);
                 }
-                className = "paragraph";
+                $(element).attr("class", "paragraph");
             }
             else {
                 if ($(element).hasClass("img-paragraph")) {
@@ -390,6 +393,12 @@
         $thisPara.fadeOut(200, function () {
             $(this).appendTo("#trashpara");
         });
+    });
+    $("#upLine").mousedown(function () {
+        //$("#"index
+    });
+    $("#downLine").mousedown(function () {
+
     });
     $("#btn-sec-upload").mousedown(function () {
         $("#modal-sec-upload").collapse('show');
