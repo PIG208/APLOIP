@@ -306,16 +306,17 @@
         $content.find(".ck-placeholder").remove();
         $content.find(".paragraph, .img-paragraph").each((index, element) => {
             var className;
-            if ($(element).hasClass("paragraph"))
+            if ($(element).hasClass("paragraph")) {
+                while (element.attributes.length > 0) {
+                    element.removeAttribute(element.attributes[0].name);
+                }
                 className = "paragraph";
-            else
-            if ($(element).hasClass("img-paragraph"))
-                className = "img-paragraph";
-            while (element.attributes.length > 0)
-            {
-                element.removeAttribute(element.attributes[0].name);
             }
-            $(element).attr("class", className);
+            else {
+                if ($(element).hasClass("img-paragraph")) {
+                    $(element).attr("class", "img-paragraph");
+                }
+            }
         });
         $content.find("*[data-placeholder]").removeAttr("data-placeholder");
         var postData = {
