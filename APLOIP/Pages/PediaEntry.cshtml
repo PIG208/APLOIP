@@ -5,7 +5,7 @@
 }
 
 <style>
-    h2 {
+    #page-basic-class-title {
         font-size: 1.5rem;
         color: grey;
     }
@@ -266,8 +266,7 @@
         $newPara.insertBefore($target);
         BalloonEditor.
             create($newPara.get(0), {
-                placeholder: "Click to edit the paragraph",
-                toolbar: [ 'bold', 'italic' ]
+                placeholder: "Click to edit the paragraph"
             });
         paraInit($newPara);
         $newPara.slideDown(50);
@@ -288,8 +287,7 @@
             $(".paragraph").each(function () {
             BalloonEditor.
                 create(this, {
-                    placeholder: "Click to edit the paragraph",
-                    toolbar: [ 'bold', 'italic' ]
+                    placeholder: "Click to edit the paragraph"
                 });
             });
             $(".img-paragraph").addClass("img-selectable");
