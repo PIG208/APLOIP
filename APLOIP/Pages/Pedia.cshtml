@@ -9,7 +9,7 @@
     <a href="/Pedia/@basicClass.UniqueTitle" class="card-pedia card pointer nonselect">
         <div class="card-body">
             <h5 class="card-title"><span class="fa fa-@basicClass.FaIcon"></span>@basicClass.DisplayTitle</h5>
-            @if (@basicClass.DisplayTitle != null && basicClass.Description.Length > 0)
+            @if (@basicClass.DisplayTitle != null && basicClass.Description.Length > 0 && !basicClass.Description.Equals("none"))
             {
                 <p class="card-text">@basicClass.Description</p>
             }

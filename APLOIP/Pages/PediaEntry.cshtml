@@ -395,10 +395,24 @@
         });
     });
     $("#upLine").mousedown(function () {
-        //$("#"index
+        console.log($("#view > div").index($focus.get(0)));
+        var curIndex = $("#view").children("div, img").index($focus.get(0));
+        if (curIndex <= 0)
+            return;
+        else if (curIndex >= 1) {
+            $focus.insertBefore($("#view").children("div, img").eq(curIndex - 1));
+            $("#toolbar").insertAfter($focus);
+        }
     });
     $("#downLine").mousedown(function () {
-
+        var curIndex = $("#view").children("div, img").index($focus.get(0));
+        var length = $("#view").children("div, img").length;
+        if (curIndex < 0)
+            return;
+        else if (curIndex < length - 1) {
+            $focus.insertAfter($("#view").children("div, img").eq(curIndex + 1));
+            $("#toolbar").insertAfter($focus);
+        }
     });
     $("#btn-sec-upload").mousedown(function () {
         $("#modal-sec-upload").collapse('show');
