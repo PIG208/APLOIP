@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace APLOIP.Pages
 {
@@ -83,20 +84,46 @@ namespace APLOIP.Pages
         public IFormFile ImageUpload { get; set; }
         public JsonResult OnPostSaveImage(string UniqueTitle)
         {
-            //IFormFile formFile = (IFormFile)Request.Form["upload"][0];
-            System.Diagnostics.Debug.WriteLine("==============================");
-            System.Diagnostics.Debug.WriteLine("name: " + ImageUpload.FileName);
-            System.Diagnostics.Debug.WriteLine("size: " + ImageUpload.Length);
-            Directory.CreateDirectory(Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle));
-            var fileName = DateTime.Now.ToString("yyyy-MM-dd HHmmss") + Path.GetFileName(ImageUpload.FileName);
-            var file = Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle, fileName);
-            Dictionary<string, object> res = new Dictionary<string, object>();
-            res.Add("Path", Path.Combine(UniqueTitle, fileName));
-            using (var fileStream = new FileStream(file, FileMode.Create))
+            if (ImageUpload == null || ImageUpload.Length == 0)
+                return new JsonResult("");
+
+            //current version of the image uploaded
+            string version = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
+            //The name of image
+            string fileName = Path.GetFileName(ImageUpload.FileName);
+            //The path of the image on the server
+            string localPath = Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle, fileName, version + Path.GetExtension(fileName));
+            //The path of the image from wwwroot
+            string serverPath = Path.Combine(Path.DirectorySeparatorChar.ToString(), "uploads", UniqueTitle, fileName, version + Path.GetExtension(fileName));
+
+            Directory.CreateDirectory(Path.Combine(Environment.WebRootPath, "uploads", UniqueTitle, fileName));
+
+            string[] keys = { "title_unique", "image_name", "version" };
+
+            MySqlIntegration sqlInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
+            sqlInteg.MySqlInsert("images", keys, UniqueTitle, fileName, version);
+            Debug.WriteLine(sqlInteg.QueryString);
+
+            using (var fileStream = new FileStream(localPath, FileMode.Create))
             {
                 ImageUpload.CopyTo(fileStream);
-                return new JsonResult(JsonConvert.SerializeObject(Path.Combine("/", "uploads", UniqueTitle, fileName)));
+                Debug.WriteLine(serverPath);
+                Debug.WriteLine(JsonConvert.SerializeObject(serverPath));
+                return new JsonResult(JsonConvert.SerializeObject(serverPath));
             }
+        }
+        public JsonResult OnPostFetchImage(string UniqueTitle)
+        {
+            MySqlIntegration sqlInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
+            string[] keys = { "title_unique", "image_name", "max(version)" };
+            sqlInteg.MySqlSelect("images", keys, "title_unique= " + MySqlIntegration.QuoteStr(UniqueTitle) + " GROUP BY image_name");
+            List<string> imgPaths = new List<string>();
+            foreach(var obj in sqlInteg.IntegratedResult)
+            {
+                Debug.WriteLine(obj["max(version)"]);
+                imgPaths.Add(Path.Combine(Path.DirectorySeparatorChar.ToString(), "uploads", UniqueTitle, (string)obj["image_name"], ((DateTime)obj["max(version)"]).ToString("yyyy-MM-dd HH-mm-ss") + Path.GetExtension((string)obj["image_name"])));
+            }
+            return new JsonResult(JsonConvert.SerializeObject(imgPaths));
         }
         public ActionResult OnPostSave()
         {

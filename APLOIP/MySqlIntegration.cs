@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System;
 using System.Linq;
 /// <summary>
 /// MySqlIntegration 是对mysql数据库进行操作的工具类
@@ -219,11 +220,11 @@ namespace MySql.Data.MySqlClient
                         for (int i = 0; i < mySqlDataReader.FieldCount; i++)
                         {
                             var val = mySqlDataReader.GetValue(i);
-                            /*string str;
+                            string str;
                             if (val.GetType() == typeof(DateTime))
-                                str = ((DateTime)val).ToString("yyyy-MM-dd HH:mm:ss");
+                                str = ((DateTime)val).ToString("yyyy-MM-dd HH-mm-ss");
                             else
-                                str = val.ToString();*/
+                                str = val.ToString();
                             tempRow.Add(mySqlDataReader.GetName(i), val);
                         }
                         result.Add(tempRow);

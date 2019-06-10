@@ -18,6 +18,32 @@
         padding: 0.1rem 0.1rem 0.1rem 0.1rem;
         background-color: transparent;
     }
+    .img-selectable{
+        cursor:pointer;
+        transition:opacity linear 0.1s;
+    }
+    .img-selectable:hover{
+        border-color: #808080;
+        box-shadow: 0 0 10px #808080;
+    }
+    #img-selected{
+        opacity: 0.5;
+        border-color: #9ecaed;
+        box-shadow: 0 0 10px #9ecaed;
+    }
+    #img-selected::after{
+        content:"1";
+        z-index:10000;
+        height:100%;
+        width:100%;
+        position:absolute;
+        left:0;
+        opacity:0.5;
+        background-color:green;
+    }
+    .transparent {
+        opacity: 0;
+    }
 
         #toolbar > button {
             display: inline-block;
@@ -41,7 +67,18 @@
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
     }
-
+    .img-33 {
+        width: 33%;
+    }
+    .img-paragraph {
+        display: block;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        max-width: 100%;
+    }
+    #modal-dialog-scrollable {
+        max-height: calc(100vh - 7rem);
+    }
     #trashpara {
         display: none;
     }
@@ -131,7 +168,7 @@
     </div>
 </div>
 <div id="modal-upload-image" class="modal fade" role="dialog" aria-labelledby="UploadImage" aria-hidden="true">
-    <div class="modal-dialog modal-sm" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">
@@ -139,28 +176,31 @@
                 </div>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
-            <div class="modal-body overflow-hidden">
-                <div class="btn-group mx-auto">
+            <div class="modal-body mx-auto">
+                <div class="btn-group">
                     <button id="btn-sec-upload" class="btn btn-primary">Upload</button>
                     <button id="btn-sec-browse" class="btn btn-outline-primary">Browse</button>
                 </div>
-                <div>
-                    <div id="modal-sec-upload" class="collapse show">
-                        <form id="image-form" method="post" enctype="multipart/form-data">
-                            <input name="UniqueTitle" value="@Model.PageEntry.UniqueTitle" hidden="hidden" />
-                            <div class="custom-file">
-                                <input id="upload-select" asp-for="ImageUpload" type="file" class="custom-file-input" />
-                                <label class="custom-file-label" for="upload-select">Upload an image</label>
-                            </div>
-                        </form>
-                        <img id="image-preview" style="position:relative;width:100%" />
-                    </div>
-                    <div id="modal-sec-browse" class="collapse">
-                        <div>nothing</div>
+                <div id="modal-sec-upload" class="collapse show">
+                    <form id="image-form" onsubmit="(e) => e.preventDefault()">
+                        <input name="UniqueTitle" value="@Model.PageEntry.UniqueTitle" hidden="hidden" />
+                        <div class="custom-file">
+                            <input id="upload-select" accept="image/*" asp-for="ImageUpload" type="file" class="custom-file-input" />
+                            <label class="custom-file-label" for="upload-select">Upload an image</label>
+                        </div>
+                    </form>
+                    <img id="image-preview" class="img-fluid" />
+                </div>
+                <div id="modal-sec-browse" class="collapse">
+                    <div id="no-image-card" class="card">
+                        <div class="card-body">
+                            <p>No images to be shown</p>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
+                <button id="btn-img-insert" type="button" class="btn btn-primary hide">Insert</button>
                 <button id="btn-upload" type="button" class="btn btn-info">Upload</button>
                 <button type="button" class="btn btn-light" data-dismiss="modal">Close</button>
             </div>
@@ -192,6 +232,7 @@
     <script>
     var edit = false;
     var $focus;
+    var $imgTarget;
     var history = [$focus];
     $('[data-toggle="popover"]').popover();
     $('[data-toggle="popover"]').hover(function () {
@@ -202,37 +243,43 @@
     });
 
     function paraInit($obj) {
-        $obj.focusin(function () {
+        $obj.mousedown(function () {
             $focus = $(this);
             $("#toolbar").insertAfter($(this));
             $("#toolbar").finish().fadeIn(200);
         });
         $obj.focusout(function () {
-            //$focus = undefined;
-            $("#toolbar").finish().fadeOut(200);
-        });
-        $obj.change(function () {
-            if (!$obj.text()) {
-            }
+            //$("#toolbar").finish().fadeOut(200);
         });
     }
-
+    function imgInsert($target, src) {
+        var $newImg = $('<img class="img-paragraph img-selectable"></img>');
+        $newImg.insertBefore($target);
+        $newImg.attr("src", src);
+        paraInit($newImg);
+        $newImg.slideDown(50);
+        //将焦点移到新加图片上
+        $newImg.mousedown();
+    }
     function paraInsert($target) {
         var $newPara = $('<div class="paragraph"></div>');
-        console.log($newPara);
         $newPara.insertBefore($target);
         BalloonEditor.
             create($newPara.get(0), {
-                placeholder: "Click to edit the paragraph"
+                placeholder: "Click to edit the paragraph",
+                toolbar: [ 'bold', 'italic' ]
             });
         paraInit($newPara);
         $newPara.slideDown(50);
+        $newPara.mousedown();
     }
 
     $("#btn-edit").mousedown(function () {
         if (edit)
             return;
         $(this).fadeOut(250, () => $(".editToolbar").fadeIn(250));
+            $("#btn-img-insert").hide();
+        //若编辑视图中存在 空内容的占位段落，则在初始化的时候将其删除
         if ($("#view > .tempintro").length == 1) {
             paraInsert($(".tempintro"));
             $(".tempintro").remove();
@@ -241,10 +288,12 @@
             $(".paragraph").each(function () {
             BalloonEditor.
                 create(this, {
-                    placeholder: "Click to edit the paragraph"
+                    placeholder: "Click to edit the paragraph",
+                    toolbar: [ 'bold', 'italic' ]
                 });
             });
-            paraInit($(".paragraph"));
+            $(".img-paragraph").addClass("img-selectable");
+            paraInit($(".paragraph, .img-paragraph"));
         }
     });
     //用户点击保存按钮事件
@@ -257,12 +306,18 @@
         $content.hide();
         $content.find("#toolbar").remove();
         $content.find(".ck-placeholder").remove();
-        $content.children().each((index, element) => {
+        $content.find(".paragraph, .img-paragraph").each((index, element) => {
+            var className;
+            if ($(element).hasClass("paragraph"))
+                className = "paragraph";
+            else
+            if ($(element).hasClass("img-paragraph"))
+                className = "img-paragraph";
             while (element.attributes.length > 0)
             {
                 element.removeAttribute(element.attributes[0].name);
             }
-            $(element).attr("class", "paragraph");
+            $(element).attr("class", className);
         });
         $content.find("*[data-placeholder]").removeAttr("data-placeholder");
         var postData = {
@@ -286,9 +341,8 @@
                 console.log("error");
             },
             success: function (data) {
-                console.log(data);
                 if (data[0] == 1) {
-                    console.log(data[0]);
+                    console.log("save succeed");
                 }
             },
             complete: () => {
@@ -324,54 +378,113 @@
         paraInsert($("#toolbar"));
     });
     $("#removeline").mousedown(function () {
-        if ($("#view > .paragraph").length == 1)
-            paraInsert($("#toolbar"));
-        if ($focus != undefined && $focus != null) {
-
+        var $thisPara = $focus;
+        if ($thisPara != undefined && $thisPara != null) {
+            if ($thisPara.prev(".paragraph, .img-paragraph") != undefined && $thisPara.prev(".paragraph, .img-paragraph") != null)
+                $focus = $thisPara.prev(".paragraph, .img-paragraph");
+            else
+            if ($thisPara.next(".paragraph, .img-paragraph") != undefined && $thisPara.next(".paragraph, .img-paragraph") != null)
+                $focus = $thisPara.next(".paragraph, .img-paragraph");
         }
-        $focus.fadeOut(200, function () {
-            $(this).appendTo($("#trashpara"));
+        if ($("#view").find(".paragraph, .img-paragraph").length == 1)
+            paraInsert($("#toolbar"));
+        $thisPara.fadeOut(200, function () {
+            $(this).appendTo("#trashpara");
         });
     });
-        $("#btn-sec-upload").mousedown(function () {
-            $("#modal-sec-upload").collapse('show');
-            $("#modal-sec-browse").collapse('hide');
-        })
-        $("#btn-sec-browse").mousedown(function () {
-            $("#modal-sec-upload").collapse('hide');
-            $("#modal-sec-browse").collapse('show');
-        })
-        $("#upload-select").change(function (e) {
-            $("#image-preview").attr("src",URL.createObjectURL(this.files[0]));
-            var fileName = $(this).val();
-            $(this).next('.custom-file-label').html(fileName.replace("C:\\fakepath\\",""));
-        })
-        $("#btn-upload").mousedown(function () {
-            var formData = new FormData($("#image-form")[0]);
-            formData.append("UniqueTitle", "@Model.PageEntry.UniqueTitle");
-            $.ajax({
-                url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=SaveImage',
-                type: "post",
-                data: formData,
-                processData: false,
-                contentType: false,
-                dataType: "json",
-                beforeSend: (xhr) => {
-                    console.log(formData);
-                    xhr.setRequestHeader("XSRF-TOKEN",
-                        $("input:hidden[name=__RequestVerificationToken]").val());
-                },
-                success: function (data) {
-                    var res = JSON.parse(data);
-                    console.log(res);
-                    $("#image-preview").attr("src",res);
-                },
-                error: function (error) {
-                    var res = JSON.parse(error);
-                    console.log(res);
-                    console.log(error);
+    $("#btn-sec-upload").mousedown(function () {
+        $("#modal-sec-upload").collapse('show');
+        $("#modal-sec-browse").collapse('hide');
+        $("#btn-img-insert").hide();
+        $("#btn-upload").show();
+        $("#modal-upload-image").removeClass("modal-dialog-scrollable");
+    });
+    $("#btn-sec-browse").mousedown(function () {
+        $("#modal-sec-upload").collapse('hide');
+        $("#modal-sec-browse").collapse('show');
+        $("#btn-img-insert").show();
+        $("#btn-upload").hide();
+        $("#modal-upload-image").addClass("modal-dialog-scrollable");
+        var formData = new FormData();
+        formData.append("UniqueTitle", "@Model.PageEntry.UniqueTitle");
+        $.ajax({
+            url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=FetchImage',
+            type: "post",
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            beforeSend: (xhr) => {
+                xhr.setRequestHeader("XSRF-TOKEN",
+                    $("input:hidden[name=__RequestVerificationToken]").val());
+            },
+            success: function (data) {
+                var images = JSON.parse(data);
+                if (images != null && images.length > 0) {
+                    $("#no-image-card").hide();
+                    $("#modal-sec-browse > img").remove();
+                    for (var i = 0; i < images.length; i++) {
+                        var img = $("<img></img>");
+                        console.log(img.addClass("img-33 img-selectable")
+                            .attr("src", images[i])
+                            .appendTo("#modal-sec-browse")
+                            .mousedown(function () {
+                                if ($imgTarget != undefined && $imgTarget != null)
+                                    $imgTarget.removeAttr("id");
+                                $imgTarget = $(this).attr("id", "img-selected");
+                            })
+                        );
+                    }
                 }
-            });
+                else {
+                    $("#no-image-card").show();
+                }
+            },
+            complete: function () {
+
+            }
+        });
+    });
+    $("#upload-select").change(function (e) {
+        $("#image-preview").attr("src", URL.createObjectURL(this.files[0]));
+        var fileName = $(this).val();
+        $(this).next('.custom-file-label').html(fileName.replace("C:\\fakepath\\", ""));
+    });
+    $("#btn-upload").mousedown(function () {
+        var formData = new FormData($("#image-form")[0]);
+        formData.append("UniqueTitle", "@Model.PageEntry.UniqueTitle");
+        $.ajax({
+            url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=SaveImage',
+            type: "post",
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            beforeSend: (xhr) => {
+                xhr.setRequestHeader("XSRF-TOKEN",
+                    $("input:hidden[name=__RequestVerificationToken]").val());
+            },
+            success: function (data) {
+                var res = JSON.parse(data);
+                $("#image-preview").attr("src", res);
+                $("#modal-upload-image").modal('hide');
+                imgInsert("#toolbar", res);
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    });
+    $("#btn-img-insert").mousedown(function () {
+        if ($imgTarget != undefined && $imgTarget != null) {
+            if ($imgTarget != undefined && $imgTarget != null)
+                $imgTarget.removeAttr("id");
+            imgInsert("#toolbar", $imgTarget.attr("src"));
+            $imgTarget = null;
+            $("#modal-upload-image").modal('hide');
+        }
+        else
+            console.log("invalid");
     });
     </script>
 }
