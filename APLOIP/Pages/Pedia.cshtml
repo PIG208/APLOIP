@@ -6,16 +6,16 @@
 
 @foreach(var basicClass in @Model.BasicClasses)
 {
-    <row>
-        <a role="button" href="/Pedia/@basicClass.UniqueTitle" class="basics-box shadow-sm pointer nonselect">
-            <span class="fa fa-@basicClass.FaIcon"></span>
-            @basicClass.DisplayTitle
-        </a>
-    </row>
+    <a href="/Pedia/@basicClass.UniqueTitle" class="card-pedia card pointer nonselect">
+        <div class="card-body">
+            <h5 class="card-title"><span class="fa fa-@basicClass.FaIcon"></span>@basicClass.DisplayTitle</h5>
+            @if (@basicClass.DisplayTitle != null && basicClass.Description.Length > 0 && !basicClass.Description.Equals("none"))
+            {
+                <p class="card-text">@basicClass.Description</p>
+            }
+        </div>
+    </a>
 }
 @section Scripts{
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"></script>
-    <script>
-        $.each()
-    </script>
 }

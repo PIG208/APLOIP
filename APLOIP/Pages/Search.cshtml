@@ -15,15 +15,15 @@
         {
             int startIndex = (index - totalLength/2 > 0) ? (index - totalLength/2) : 0;
             if (startIndex + totalLength < str.Length)
-                return str.Substring(startIndex, totalLength);
+                return "..." + str.Substring(startIndex, totalLength) + "...";
             else
-                return str.Substring(startIndex);
+                return "..." + str.Substring(startIndex);
         }
         else
         {
             if (str.Length > totalLength)
             {
-                return str.Substring(0, totalLength);
+                return str.Substring(0, totalLength) + "...";
             }
             else
             {
@@ -47,7 +47,7 @@
 @{
     ViewData["title"] = "Search";
     Func<Entry, object> resultTemplate
-        = @<a class="search-result-box btn btn-outline-info" href="/Pedia/@item.UniqueTitle">
+        = @<a class="search-result-box btn btn-light" href="/Pedia/@item.UniqueTitle">
             <h2><span class="search-result-icon fa fa-@Model.BasicClasses.Find(obj => obj.ID == item.BasicClassID)?.FaIcon"></span>@Html.Raw(addHighlight(item.DisplayTitle, Model.Query))</h2>
             <p>Pedia/@Html.Raw(addHighlight(item.UniqueTitle, Model.Query))</p>
             <hr />
@@ -72,7 +72,7 @@
     }
 
     .highlight {
-        color: orange;
+        background-color: rgba(255, 165, 0, 0.29);
     }
 </style>
 

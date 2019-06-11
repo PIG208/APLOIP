@@ -4,85 +4,7 @@
     ViewData["Title"] = "PEDIA";
 }
 
-<style>
-    h2 {
-        font-size: 1.5rem;
-        color: grey;
-    }
-
-    #toolbar {
-        user-select: none;
-        /*display:inline-block;*/
-        display: none;
-        border-radius: 0.5em;
-        padding: 0.1rem 0.1rem 0.1rem 0.1rem;
-        background-color: transparent;
-    }
-    .img-selectable{
-        cursor:pointer;
-        transition:opacity linear 0.1s;
-    }
-    .img-selectable:hover{
-        border-color: #808080;
-        box-shadow: 0 0 10px #808080;
-    }
-    #img-selected{
-        opacity: 0.5;
-        border-color: #9ecaed;
-        box-shadow: 0 0 10px #9ecaed;
-    }
-    #img-selected::after{
-        content:"1";
-        z-index:10000;
-        height:100%;
-        width:100%;
-        position:absolute;
-        left:0;
-        opacity:0.5;
-        background-color:green;
-    }
-    .transparent {
-        opacity: 0;
-    }
-
-        #toolbar > button {
-            display: inline-block;
-            position: relative;
-            height: 2.3rem;
-            margin: 0.05rem 0.05rem 0.05rem 0.05rem;
-        }
-
-            #toolbar > button > .fa {
-                font-size: 1.2rem;
-            }
-
-    .editToolbar {
-        display: none;
-        float: right;
-        margin-right: 0.5rem;
-        margin-left: 0.5rem;
-    }
-
-    .paragraph {
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    .img-33 {
-        width: 33%;
-    }
-    .img-paragraph {
-        display: block;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-        max-width: 100%;
-    }
-    #modal-dialog-scrollable {
-        max-height: calc(100vh - 7rem);
-    }
-    #trashpara {
-        display: none;
-    }
-</style>
+<link href="~/css/pedia.css" rel="stylesheet" />
 
 @Html.AntiForgeryToken()
 <button type="button" id="btn-edit" class="btn btn-light float-right">Edit</button>
@@ -108,6 +30,8 @@
     <button type="button" id="insertline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Insert a paragraph" class="btn btn-light"><span class="fa fa-plus"></span></button>
     <button type="button" id="removeline" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Remove the current paragraph" class="btn btn-light"><span class="fa fa-minus"></span></button>
     <button type="button" id="insertImage" data-container="body" data-toggle="modal" data-target="#modal-upload-image" data-placement="bottom" data-content="Insert an image" class="btn btn-light"><span class="fa fa-image"></span></button>
+    <button type="button" id="upLine" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Move the current paragraph upward" class="btn btn-light"><span class="fa fa-arrow-up"></span></button>
+    <button type="button" id="downLine" data-container="body" data-toggle="popover" data-placement="bottom" data-content="Move the current paragraph downward" class="btn btn-light"><span class="fa fa-arrow-down"></span></button>
 </span>
 <div id="modal-save" class="modal fade" role="dialog" aria-labelledby="Save the changes" aria-hidden="true">
     <div class="modal-dialog modal-sm" role="document">
@@ -267,7 +191,7 @@
         BalloonEditor.
             create($newPara.get(0), {
                 placeholder: "Click to edit the paragraph",
-                toolbar: [ 'bold', 'italic' ]
+                removePlugins: ["Image","ImageUpload","ImageToolbar","ImageStyle","ImageCaption","EasyImage","MediaEmbed","table"]
             });
         paraInit($newPara);
         $newPara.slideDown(50);
@@ -280,6 +204,7 @@
         $(this).fadeOut(250, () => $(".editToolbar").fadeIn(250));
             $("#btn-img-insert").hide();
         //若编辑视图中存在 空内容的占位段落，则在初始化的时候将其删除
+        $(".content").addClass("content-edit");
         if ($("#view > .tempintro").length == 1) {
             paraInsert($(".tempintro"));
             $(".tempintro").remove();
@@ -289,7 +214,7 @@
             BalloonEditor.
                 create(this, {
                     placeholder: "Click to edit the paragraph",
-                    toolbar: [ 'bold', 'italic' ]
+                    removePlugins: ["Image","ImageUpload","ImageToolbar","ImageStyle","ImageCaption","EasyImage","MediaEmbed","table"]
                 });
             });
             $(".img-paragraph").addClass("img-selectable");
@@ -308,16 +233,17 @@
         $content.find(".ck-placeholder").remove();
         $content.find(".paragraph, .img-paragraph").each((index, element) => {
             var className;
-            if ($(element).hasClass("paragraph"))
-                className = "paragraph";
-            else
-            if ($(element).hasClass("img-paragraph"))
-                className = "img-paragraph";
-            while (element.attributes.length > 0)
-            {
-                element.removeAttribute(element.attributes[0].name);
+            if ($(element).hasClass("paragraph")) {
+                while (element.attributes.length > 0) {
+                    element.removeAttribute(element.attributes[0].name);
+                }
+                $(element).attr("class", "paragraph");
             }
-            $(element).attr("class", className);
+            else {
+                if ($(element).hasClass("img-paragraph")) {
+                    $(element).attr("class", "img-paragraph");
+                }
+            }
         });
         $content.find("*[data-placeholder]").removeAttr("data-placeholder");
         var postData = {
@@ -392,6 +318,26 @@
             $(this).appendTo("#trashpara");
         });
     });
+    $("#upLine").mousedown(function () {
+        console.log($("#view > div").index($focus.get(0)));
+        var curIndex = $("#view").children("div, img").index($focus.get(0));
+        if (curIndex <= 0)
+            return;
+        else if (curIndex >= 1) {
+            $focus.insertBefore($("#view").children("div, img").eq(curIndex - 1));
+            $("#toolbar").insertAfter($focus);
+        }
+    });
+    $("#downLine").mousedown(function () {
+        var curIndex = $("#view").children("div, img").index($focus.get(0));
+        var length = $("#view").children("div, img").length;
+        if (curIndex < 0)
+            return;
+        else if (curIndex < length - 1) {
+            $focus.insertAfter($("#view").children("div, img").eq(curIndex + 1));
+            $("#toolbar").insertAfter($focus);
+        }
+    });
     $("#btn-sec-upload").mousedown(function () {
         $("#modal-sec-upload").collapse('show');
         $("#modal-sec-browse").collapse('hide');
@@ -454,7 +400,7 @@
         var formData = new FormData($("#image-form")[0]);
         formData.append("UniqueTitle", "@Model.PageEntry.UniqueTitle");
         $.ajax({
-            url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=SaveImage',
+            url: "@Model.PageEntry.UniqueTitle?handler=SaveImage",
             type: "post",
             data: formData,
             processData: false,

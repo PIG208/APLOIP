@@ -102,15 +102,23 @@ namespace APLOIP.Pages
 
             MySqlIntegration sqlInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
             sqlInteg.MySqlInsert("images", keys, UniqueTitle, fileName, version);
-            Debug.WriteLine(sqlInteg.QueryString);
-
-            using (var fileStream = new FileStream(localPath, FileMode.Create))
+            FileStream fileStream = null;
+            try
             {
+                fileStream = new FileStream(localPath, FileMode.Create);
                 ImageUpload.CopyTo(fileStream);
-                Debug.WriteLine(serverPath);
-                Debug.WriteLine(JsonConvert.SerializeObject(serverPath));
-                return new JsonResult(JsonConvert.SerializeObject(serverPath));
             }
+            catch(IOException ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return new JsonResult("");
+            }
+            finally
+            {
+                if (fileStream != null)
+                    fileStream.Close();
+            }
+            return new JsonResult(JsonConvert.SerializeObject(serverPath));
         }
         public JsonResult OnPostFetchImage(string UniqueTitle)
         {
