@@ -30,6 +30,7 @@ strong {
 #primary {
     margin-top: 2rem;
     padding-bottom: 3rem;
+    overflow:hidden;
 }
 .content {
     padding: 0 8.1vw 0 8.1vw;

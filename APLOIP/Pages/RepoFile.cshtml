@@ -101,7 +101,6 @@
 @if (RouteData.Values["title"] == null)
 {
     @Html.AntiForgeryToken()
-    <button id="btn-edit" type="button" class="btn btn-light float-right">Edit</button>
     <h1>@ViewData["title"]</h1>
     <hr />
     <div class="file-upload-wrapper">
@@ -169,49 +168,76 @@ else
         <div class="card-body">
             <div class="file-upload-wrapper">
                 <div class="file-placeholder file-placeholder-enabled" data-file="@file.Title">
-                    <span class="fa fa-file"></span>
+                    @switch (System.IO.Path.GetExtension(file.Title))
+                    {
+                        case ".doc":
+                        case ".docx":
+                            <span class="fa fa-file-word"></span>
+                            break;
+                        case ".ppt":
+                        case ".pptx":
+                            <span class="fa fa-file-powerpoint"></span>
+                            break;
+                        case ".xls":
+                        case ".xlsx":
+                            <span class="fa fa-file-excel"></span>
+                            break;
+                        case ".pdf":
+                            <span class="fa fa-file-pdf"></span>
+                            break;
+                        case ".png":
+                        case ".gif":
+                        case ".jpg":
+                        case ".jpeg":
+                            <span class="fa fa-file-image"></span>
+                            break;
+                        default:
+                            <span class="fa fa-file"></span>
+                            break;
+                    }
                 </div>
             </div>
         </div>
         <div class="card-footer">
-            <a class="btn btn-info text-decoration-none" href="@file.Path" target="_blank" data-href="@file.Path">Download</a>
+            <a class="btn btn-info text-decoration-none" href="@file.Path" data-href="@file.Path">Download</a>
+            <a class="btn btn-light text-decoration-none" href="./">Upload</a>
         </div>
     </div>
     }
-}
+                    }
 
-@section Scripts{
+                    @section Scripts{
     <script>
         $("#input-upload").change(function (e) {
-            var fileName = $(this).val().replace("C:\\fakepath\\", "");
+                            var fileName = $(this).val().replace("C:\\fakepath\\", "");
             $(this).next('.custom-file-label').html(fileName);
-        });
+                        });
 
-        function OnClickApply() {
-            var fileName = $("#input-upload").val().replace("C:\\fakepath\\", "");
+                        function OnClickApply() {
+                            var fileName = $("#input-upload").val().replace("C:\\fakepath\\", "");
             $(".file-placeholder").addClass("file-placeholder-enabled");
             $("#input-file-name").val(fileName);
             $(".file-placeholder-enabled").attr("data-file", fileName);
-        }
+                        }
 
-        function OnClickClose() {
+                        function OnClickClose() {
             $("#input-upload").val("");
-        }
+                        }
 
-        function OnClickUpload() {
-            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
+                        function OnClickUpload() {
+                            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
                 return;
-            if ($("#input-upload")[0].files[0].size > 4194304) {
-                alert("Item too large");
-                return;
-            }
+                            if ($("#input-upload")[0].files[0].size > 4194304) {
+                                alert("Item too large");
+                                return;
+                            }
             $(this).data("isCompleted", false);
             $(this).addClass("disabled");
-            var formData = new FormData();
-            formData.append("fileUpload", $("#input-upload")[0].files[0]);
-            formData.append("title", $("#input-file-name").val());
+                            var formData = new FormData();
+                            formData.append("fileUpload", $("#input-upload")[0].files[0]);
+                            formData.append("title", $("#input-file-name").val());
             $.ajax({
-                url: '/Repository/file?handler=UploadFile',
+                            url: '/Repository/file?handler=UploadFile',
                 type: "post",
                 data: formData,
                 cache: false,
@@ -224,27 +250,27 @@ else
                         $("input:hidden[name=__RequestVerificationToken]").val());
                 },
                 xhr: function () {
-                    var thisXhr = $.ajaxSettings.xhr();
-                    if (thisXhr.upload) {
+                                    var thisXhr = $.ajaxSettings.xhr();
+                                    if (thisXhr.upload) {
                         $("#upload-progress").fadeIn(100, () => {
-                            thisXhr.upload.addEventListener('progress', function (e) {
-                                if (e.lengthComputable) {
-                                    console.log((e.loaded / e.total) * 100 + "%");
+                         thisXhr.upload.addEventListener('progress', function (e) {
+                             if (e.lengthComputable) {
+                                 console.log((e.loaded / e.total) * 100 + "%");
                                     $("#upload-progress .progress-bar").css({
-                                        "width": (e.loaded / e.total) * 100 + "%"
+                                     "width": (e.loaded / e.total) * 100 + "%"
                                     });
-                                }
-                            }, false);
-                        });
-                    }
+                                    }
+                                }, false);
+                            });
+                        }
                     return thisXhr;
-                },
+                    },
                 success: function () {
                     $("#upload-progress").fadeOut(750, function () {
                         $(this).find(".progress-bar").removeClass("bg-success");
-                    }).find(".progress-bar").addClass("bg-success");
-                    alert("Uploaded successfully");
-                },
+                        }).find(".progress-bar").addClass("bg-success");
+                        alert("Uploaded successfully");
+                    },
                 complete: () => {
                     $(".file-placeholder").removeClass("file-placeholder-enabled");
                     $("#input-file-name").val("");
@@ -253,7 +279,7 @@ else
                     $(".file-placeholder-enabled").removeAttr("data-file");
                     $(this).removeClass("disabled");
                     $(this).data("isCompleted", true);
-                }
+                    }
             });
         }
     </script>

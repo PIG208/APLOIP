@@ -74,7 +74,7 @@ namespace APLOIP.Pages
 
             //Future Feature
             //sqlInteg.MySqlInsert("repo_key_values", keys, title, Operator.File, "description", localPath, "string");
-            System.Threading.Thread.Sleep(2500);
+            System.Threading.Thread.Sleep(500);
             FileStream fileStream = null;
             try
             {

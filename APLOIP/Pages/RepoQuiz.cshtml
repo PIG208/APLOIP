@@ -1,0 +1,140 @@
+﻿@page "/Repository/Quiz/{title?}"
+@model APLOIP.Pages.RepoQuizModel
+@{
+    ViewData["Title"] = "QUIZ";
+}
+
+@Html.AntiForgeryToken()
+<button type="button" id="btn-create" class="btn btn-primary float-right">Create</button>
+<h2>RepoQuiz</h2>
+<h5>@Model.PageQuiz.DisplayTitle</h5>
+<div id="modal-quiz" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-quiz">
+                    <div id="group-quiz">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">DisplayTitle</span>
+                            </div>
+                            <input name="quiz_title" id="input-display-title" class="form-control" />
+                        </div>
+                    </div>
+                    <div id="template" class="group-entity" hidden>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Info</span>
+                            </div>
+                            <input name="entity_info" class="entity-title form-control" placeholder="Mind Test|You need to look at the shape and choose an answer|Red|Blue|Yellow" />
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Answer</span>
+                            </div>
+                            <input name="entity_answer" class="entity-title form-control" placeholder="0|1|2" />
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Type</span>
+                            </div>
+                            <input name="entity_type" class="entity-type form-control" placeholder="mcq" />
+                        </div>
+                    </div>
+                    <div class="group-entity">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Info</span>
+                            </div>
+                            <input name="entity_info" class="entity-info form-control" placeholder="Mind Test|You need to look at the shape and choose an answer|Red|Blue|Yellow" />
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Answer</span>
+                            </div>
+                            <input name="entity_answer" class="entity-answer form-control" placeholder="0|1|2" />
+                        </div>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Type</span>
+                            </div>
+                            <input name="entity_type" class="entity-type form-control" placeholder="mcq" />
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-light" id="btn-add">Add</button>
+                    <button type="button" class="btn btn-light" id="btn-remove">Remove</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-submit" class="btn btn-info" data-dismiss="modal">Submit</button>
+                <button class="btn btn-light" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@foreach (var i in Model.PageQuiz.Entities)
+{
+    <div>
+        @i.SerializeEntity()
+    </div>
+}
+@section Scripts{ 
+<script>
+    $("#btn-create").mousedown(function () {
+        $("#modal-quiz").modal("toggle");
+    });
+    $("#btn-add").mousedown(function () {
+        $("#template").clone().removeAttr("id hidden").insertBefore(this);
+    })
+    $("#btn-remove").mousedown(function () {
+        if ($("#form-quiz .group-entity").length > 2)
+            $("#btn-add").prev(".group-entity").remove();
+    })
+    $("#btn-submit").mousedown(() => $("#form-quiz").submit());
+    $("#form-quiz").submit(function (e) {
+        e.preventDefault();
+        var formData = new FormData();
+        formData.append("UniqueTitle", "@Model.PageQuiz.UniqueTitle");
+        formData.append("DisplayTitle", $("#input-display-title").val());
+        var objList = [];
+        $(".group-entity").each((index, element) => {
+            var obj = {
+                "Info": $(element).find(".entity-info").val(),
+                "Answer": $(element).find(".entity-answer").val(),
+                "Type": $(element).find(".entity-type").val()
+            };
+            objList.push()
+        });
+        formData.append("Entities", objList);
+        console.log(formData);
+        $.ajax({
+            url: '/Pedia/@Model.PageQuiz.UniqueTitle?handler=Save',
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            beforeSend: (xhr) => {
+                xhr.setRequestHeader("XSRF-TOKEN",
+                    $("input:hidden[name=__RequestVerificationToken]").val());
+            },
+            error: function () {
+                console.log("error");
+            },
+            success: function (data) {
+                if (data[0] == 1) {
+                    console.log("save succeed");
+                }
+            },
+            complete: () => {
+                $("#modal-save").modal("hide");
+                $(this).data("isCompleted", true);
+            }
+        });
+    })
+</script>
+}

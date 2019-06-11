@@ -3,3 +3,37 @@
 @{
     ViewData["Title"] = "REPOSITORY";
 }
+
+<style>
+    .float-card {
+        width: 33%;
+        margin: 1rem 1rem 1rem 1rem;
+    }
+    @@media screen and (max-width:767px) {
+        .float-card {
+            width: 75%;
+            margin: 1rem auto 1rem auto;
+        }
+    }
+</style>
+<h1>Repository</h1>
+<hr />
+@foreach(var i in Model.RepoEntries)
+{
+    <div class="card float-md-left float-card">
+        <div class="card-header"><h5 class="card-text">@i.DisplayTitle</h5></div>
+        <div class="card-body">
+            <p>A @i.OperatiorType created in @i.CreationTime.ToString() by
+            @if (i.Owner != "anonymous") {
+            }
+            else
+            {
+                @Html.Raw("an " + @i.Owner + " user");
+            }
+            </p>
+        </div>
+        <div class="card-footer">
+            <a class="btn btn-primary text-decoration-none" href="~/Repository/@i.OperatiorType/@i.UniqueTitle">Go</a>
+        </div>
+    </div>
+}
