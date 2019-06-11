@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Content Include="Pages\index.cshtml.cs" />
+    <Content Include="Operator.cs" />
   </ItemGroup>
 
   <ItemGroup>

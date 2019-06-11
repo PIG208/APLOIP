@@ -4,85 +4,7 @@
     ViewData["Title"] = "PEDIA";
 }
 
-<style>
-    #page-basic-class-title {
-        font-size: 1.5rem;
-        color: grey;
-    }
-
-    #toolbar {
-        user-select: none;
-        /*display:inline-block;*/
-        display: none;
-        border-radius: 0.5em;
-        padding: 0.1rem 0.1rem 0.1rem 0.1rem;
-        background-color: transparent;
-    }
-    .img-selectable{
-        cursor:pointer;
-        transition:opacity linear 0.1s;
-    }
-    .img-selectable:hover{
-        border-color: #808080;
-        box-shadow: 0 0 10px #808080;
-    }
-    #img-selected{
-        opacity: 0.5;
-        border-color: #9ecaed;
-        box-shadow: 0 0 10px #9ecaed;
-    }
-    #img-selected::after{
-        content:"1";
-        z-index:10000;
-        height:100%;
-        width:100%;
-        position:absolute;
-        left:0;
-        opacity:0.5;
-        background-color:green;
-    }
-    .transparent {
-        opacity: 0;
-    }
-
-        #toolbar > button {
-            display: inline-block;
-            position: relative;
-            height: 2.3rem;
-            margin: 0.05rem 0.05rem 0.05rem 0.05rem;
-        }
-
-            #toolbar > button > .fa {
-                font-size: 1.2rem;
-            }
-
-    .editToolbar {
-        display: none;
-        float: right;
-        margin-right: 0.5rem;
-        margin-left: 0.5rem;
-    }
-
-    .paragraph {
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    .img-33 {
-        width: 33%;
-    }
-    .img-paragraph {
-        display: block;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-        max-width: 100%;
-    }
-    #modal-dialog-scrollable {
-        max-height: calc(100vh - 7rem);
-    }
-    #trashpara {
-        display: none;
-    }
-</style>
+<link href="~/css/pedia.css" rel="stylesheet" />
 
 @Html.AntiForgeryToken()
 <button type="button" id="btn-edit" class="btn btn-light float-right">Edit</button>
@@ -268,7 +190,8 @@
         $newPara.insertBefore($target);
         BalloonEditor.
             create($newPara.get(0), {
-                placeholder: "Click to edit the paragraph"
+                placeholder: "Click to edit the paragraph",
+                removePlugins: ["Image","ImageUpload","ImageToolbar","ImageStyle","ImageCaption","EasyImage","MediaEmbed","table"]
             });
         paraInit($newPara);
         $newPara.slideDown(50);
@@ -290,7 +213,8 @@
             $(".paragraph").each(function () {
             BalloonEditor.
                 create(this, {
-                    placeholder: "Click to edit the paragraph"
+                    placeholder: "Click to edit the paragraph",
+                    removePlugins: ["Image","ImageUpload","ImageToolbar","ImageStyle","ImageCaption","EasyImage","MediaEmbed","table"]
                 });
             });
             $(".img-paragraph").addClass("img-selectable");
@@ -476,7 +400,7 @@
         var formData = new FormData($("#image-form")[0]);
         formData.append("UniqueTitle", "@Model.PageEntry.UniqueTitle");
         $.ajax({
-            url: '/Pedia/@Model.PageEntry.UniqueTitle?handler=SaveImage',
+            url: "@Model.PageEntry.UniqueTitle?handler=SaveImage",
             type: "post",
             data: formData,
             processData: false,

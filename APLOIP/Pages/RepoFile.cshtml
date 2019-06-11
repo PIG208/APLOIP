@@ -1,0 +1,260 @@
+﻿@page "/Repository/File/{title?}"
+@model APLOIP.Pages.RepoFileModel
+@{
+    ViewData["Title"] = "FILE";
+}
+<style>
+    .file-upload-wrapper {
+        min-height: 50vh;
+        margin-left: auto;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .file-placeholder {
+        /*float: left;*/
+        cursor: pointer;
+        height: 40vw;
+        width: 40vw;
+        color: grey;
+        position: relative;
+        margin: 1.5vw auto 1.5vw auto;
+        border: dashed 7px grey;
+        box-sizing: border-box;
+        overflow: hidden;
+        /*background: rgba(200, 200, 200, 0.55);*/
+    }
+
+    .progress-bar-success[width="100%"] {
+        background-color: green;
+    }
+
+    .file-placeholder:hover {
+        opacity: 0.5;
+        border-color: #808080;
+        box-shadow: 0 0 10px #808080;
+    }
+
+    .file-placeholder:after {
+        content: "UPLOAD";
+        display: block;
+        height: 40vw;
+        position: absolute;
+        z-index: 1000;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        line-height: 40vw;
+        font-size: 8vw;
+        font-weight: 700;
+        margin: 0 auto 0 auto;
+        color: rgba(75, 75, 75, 0.72);
+    }
+
+    .file-placeholder span {
+        font-size: 15vw;
+        line-height: 40vw;
+        opacity: 0.5;
+    }
+
+    .file-placeholder-enabled {
+        border: none;
+    }
+    .file-placeholder-nonselect {
+
+    }
+
+        .file-placeholder-enabled span {
+            color: darkgray;
+        }
+
+        .file-placeholder-enabled:hover {
+        }
+
+        .file-placeholder-enabled:after {
+            content: attr(data-file);
+            font-size: 2.2vw !important;
+        }
+
+    @@media screen and (max-width: 768px) {
+        .file-placeholder {
+            border-width: 4px;
+            height: 50vw;
+            width: 50vw;
+            font-size: 25vw;
+        }
+
+            .file-placeholder:after {
+                line-height: 50vw;
+                height: 50vw;
+                line-height: 50vw;
+                font-size: 20vw;
+            }
+
+            .file-placeholder span {
+                font-size: 30vw;
+                line-height: 50vw;
+                opacity: 0.5;
+            }
+    }
+</style>
+@if (RouteData.Values["title"] == null)
+{
+    @Html.AntiForgeryToken()
+    <button id="btn-edit" type="button" class="btn btn-light float-right">Edit</button>
+    <h1>@ViewData["title"]</h1>
+    <hr />
+    <div class="file-upload-wrapper">
+        <div class="row">
+            <div class="col-md">
+                <div class="file-placeholder" data-toggle="modal" data-target="#modal-upload">
+                    <span class="fa fa-file"></span>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="card">
+                    <div class="card-header"><h5 class="card-title">Attributes</h5></div>
+                    <div class="card-body">
+                        <form id="form-file-attr">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">Name</div>
+                                </div>
+                                <input id="input-file-name" type="text" class="form-control" />
+                            </div>
+                            <div id="upload-progress" style="display:none">
+                                <br />
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-animated progress-bar-striped progress-bar-success" role="progressbar" style="width:0"></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-info" onclick="OnClickUpload()">Upload</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modal-upload" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">Upload</div>
+                    <button class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-upload">
+                        <div class="custom-file">
+                            <input id="input-upload" type="file" accept="image/*, video/*, audio/*, .doc, .docx, .pdf, .xls, .xlsx, .ppt, .pptx, .txt, .zip," class="custom-file-input" />
+                            <label for="input-upload" class="custom-file-label"></label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-info" data-dismiss="modal" onclick="OnClickApply()">Apply</button>
+                    <button class="btn btn-light" data-dismiss="modal" onclick="OnClickClose()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @foreach (var file in Model.FileList)
+    {
+    <div class="card">
+        <div class="card-header"><h5 class="card-title">@RouteData.Values["title"]</h5></div>
+        <div class="card-body">
+            <div class="file-upload-wrapper">
+                <div class="file-placeholder file-placeholder-enabled" data-file="@file.Title">
+                    <span class="fa fa-file"></span>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a class="btn btn-info text-decoration-none" href="@file.Path" target="_blank" data-href="@file.Path">Download</a>
+        </div>
+    </div>
+    }
+}
+
+@section Scripts{
+    <script>
+        $("#input-upload").change(function (e) {
+            var fileName = $(this).val().replace("C:\\fakepath\\", "");
+            $(this).next('.custom-file-label').html(fileName);
+        });
+
+        function OnClickApply() {
+            var fileName = $("#input-upload").val().replace("C:\\fakepath\\", "");
+            $(".file-placeholder").addClass("file-placeholder-enabled");
+            $("#input-file-name").val(fileName);
+            $(".file-placeholder-enabled").attr("data-file", fileName);
+        }
+
+        function OnClickClose() {
+            $("#input-upload").val("");
+        }
+
+        function OnClickUpload() {
+            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
+                return;
+            if ($("#input-upload")[0].files[0].size > 4194304) {
+                alert("Item too large");
+                return;
+            }
+            $(this).data("isCompleted", false);
+            $(this).addClass("disabled");
+            var formData = new FormData();
+            formData.append("fileUpload", $("#input-upload")[0].files[0]);
+            formData.append("title", $("#input-file-name").val());
+            $.ajax({
+                url: '/Repository/file?handler=UploadFile',
+                type: "post",
+                data: formData,
+                cache: false,
+                processData: false,
+                contentType: false,
+                dataType: "json",
+                beforeSend: (xhr) => {
+                    console.log(123);
+                    xhr.setRequestHeader("XSRF-TOKEN",
+                        $("input:hidden[name=__RequestVerificationToken]").val());
+                },
+                xhr: function () {
+                    var thisXhr = $.ajaxSettings.xhr();
+                    if (thisXhr.upload) {
+                        $("#upload-progress").fadeIn(100, () => {
+                            thisXhr.upload.addEventListener('progress', function (e) {
+                                if (e.lengthComputable) {
+                                    console.log((e.loaded / e.total) * 100 + "%");
+                                    $("#upload-progress .progress-bar").css({
+                                        "width": (e.loaded / e.total) * 100 + "%"
+                                    });
+                                }
+                            }, false);
+                        });
+                    }
+                    return thisXhr;
+                },
+                success: function () {
+                    $("#upload-progress").fadeOut(750, function () {
+                        $(this).find(".progress-bar").removeClass("bg-success");
+                    }).find(".progress-bar").addClass("bg-success");
+                    alert("Uploaded successfully");
+                },
+                complete: () => {
+                    $(".file-placeholder").removeClass("file-placeholder-enabled");
+                    $("#input-file-name").val("");
+                    $("#input-upload").val("");
+                    $("#upload-progress .progress-bar").css({ "width": 0 });
+                    $(".file-placeholder-enabled").removeAttr("data-file");
+                    $(this).removeClass("disabled");
+                    $(this).data("isCompleted", true);
+                }
+            });
+        }
+    </script>
+}
