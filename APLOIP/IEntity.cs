@@ -1,8 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace APLOIP
 {
@@ -25,7 +23,7 @@ namespace APLOIP
         {
             Dictionary<string, object> result = new Dictionary<string, object>();
             List<string> values = Info.Split('|').ToList();
-            if(values.Count > 0)
+            if (values.Count > 0)
             {
                 result.Add("title", values?[0]);
                 result.Add("content", values?[1]);
@@ -53,7 +51,8 @@ namespace APLOIP
                 result.Add("choices", values.Skip(2));
             }
             List<int> answers = new List<int>();
-            Answer.Split('|').ToList().ForEach(element => {
+            Answer.Split('|').ToList().ForEach(element =>
+            {
                 if (int.TryParse(element, out int value))
                     answers.Add(value);
             });

@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
-using System;
 using System.Linq;
 /// <summary>
 /// MySqlIntegration 是对mysql数据库进行操作的工具类
@@ -193,7 +193,7 @@ namespace MySql.Data.MySqlClient
                 MySqlCommand mySqlCommand = new MySqlCommand(queryStr, connection);
                 mySqlDataReader = mySqlCommand.ExecuteReader();
             }
-            catch(MySqlException e)
+            catch (MySqlException e)
             {
                 throw e;
             }

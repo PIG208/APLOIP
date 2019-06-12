@@ -6,7 +6,7 @@
 
 <style>
     .float-card {
-        width: 33%;
+        width: 45%;
         margin: 1rem 1rem 1rem 1rem;
     }
     @@media screen and (max-width:767px) {
@@ -23,14 +23,19 @@
     <div class="card float-md-left float-card">
         <div class="card-header"><h5 class="card-text">@i.DisplayTitle</h5></div>
         <div class="card-body">
-            <p>A @i.OperatiorType created in @i.CreationTime.ToString() by
-            @if (i.Owner != "anonymous") {
-            }
-            else
-            {
-                @Html.Raw("an " + @i.Owner + " user");
-            }
+            <p>
+                Owner:&nbsp;
+                @if (i.Owner != "anonymous")
+                {
+                    @Html.Raw(i.Owner)
+                }
+                else
+                {
+                    @Html.Raw("an " + @i.Owner + " user");
+                }
             </p>
+            <p>@i.Description</p>
+            <p style="color:grey">@i.OperatiorType uploaded in @i.CreationTime.ToString()</p>
         </div>
         <div class="card-footer">
             <a class="btn btn-primary text-decoration-none" href="~/Repository/@i.OperatiorType/@i.UniqueTitle">Go</a>

@@ -1,16 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.IO;
 
 namespace APLOIP.Pages
 {
@@ -65,11 +63,11 @@ namespace APLOIP.Pages
             {
                 PageEntry = new Entry()
                 {
-                    UniqueTitle = (string) RouteData.Values["title"],
+                    UniqueTitle = (string)RouteData.Values["title"],
                     PageContent = "<div class='paragraph tempintro'>Click edit to create the entry \"" + RouteData.Values["title"] + "\"</div>"
                 };
                 //通过比较UniqueTitle判断当前路径下的词条是否为基础类，若是，DisplayTitle采用BasicClass.DisplayTitle的值
-                if(IsBasicEntry(PageEntry))
+                if (IsBasicEntry(PageEntry))
                 {
                     BasicClass tempBasicClass = BasicClasses.Find(basicClassObj => basicClassObj.UniqueTitle == PageEntry.UniqueTitle);
                     PageEntry.DisplayTitle = tempBasicClass?.DisplayTitle;
@@ -108,7 +106,7 @@ namespace APLOIP.Pages
                 fileStream = new FileStream(localPath, FileMode.Create);
                 ImageUpload.CopyTo(fileStream);
             }
-            catch(IOException ex)
+            catch (IOException ex)
             {
                 Debug.WriteLine(ex.Message);
                 return new JsonResult("");
@@ -126,7 +124,7 @@ namespace APLOIP.Pages
             string[] keys = { "title_unique", "image_name", "max(version)" };
             sqlInteg.MySqlSelect("images", keys, "title_unique= " + MySqlIntegration.QuoteStr(UniqueTitle) + " GROUP BY image_name");
             List<string> imgPaths = new List<string>();
-            foreach(var obj in sqlInteg.IntegratedResult)
+            foreach (var obj in sqlInteg.IntegratedResult)
             {
                 Debug.WriteLine(obj["max(version)"]);
                 imgPaths.Add(Path.Combine(Path.DirectorySeparatorChar.ToString(), "uploads", UniqueTitle, (string)obj["image_name"], ((DateTime)obj["max(version)"]).ToString("yyyy-MM-dd HH-mm-ss") + Path.GetExtension((string)obj["image_name"])));
@@ -159,7 +157,7 @@ namespace APLOIP.Pages
                 }
             }
             PageEntry.PageContent = PageEntry.PageContent.Replace("\\", "\\\\");
-            PageEntry.PageContent = PageEntry.PageContent.Replace("\'","\\\'");
+            PageEntry.PageContent = PageEntry.PageContent.Replace("\'", "\\\'");
             string[] keySelect = { "title_unique" };
             MySqlIntegration postInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
             postInteg.MySqlSelect("entries", keySelect, "title_unique=" + MySqlIntegration.QuoteStr(PageEntry.UniqueTitle));

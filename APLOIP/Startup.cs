@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace APLOIP
@@ -24,8 +20,9 @@ namespace APLOIP
         {
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                .AddRazorPagesOptions(options => {
-                    options.Conventions.AddPageRoute("/Index","");
+                .AddRazorPagesOptions(options =>
+                {
+                    options.Conventions.AddPageRoute("/Index", "");
                 });
             services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN");
         }

@@ -121,6 +121,18 @@
                                 </div>
                                 <input id="input-file-name" type="text" class="form-control" />
                             </div>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">Owner</div>
+                                </div>
+                                <input id="input-file-owner" type="text" class="form-control" />
+                            </div>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">Description</div>
+                                </div>
+                                <input id="input-file-description" type="text" class="form-control" />
+                            </div>
                             <div id="upload-progress" style="display:none">
                                 <br />
                                 <div class="progress">
@@ -197,6 +209,7 @@ else
                     }
                 </div>
             </div>
+            <p>@file.Description</p>
         </div>
         <div class="card-footer">
             <a class="btn btn-info text-decoration-none" href="@file.Path" data-href="@file.Path">Download</a>
@@ -206,38 +219,40 @@ else
     }
                     }
 
-                    @section Scripts{
+@section Scripts{
     <script>
         $("#input-upload").change(function (e) {
-                            var fileName = $(this).val().replace("C:\\fakepath\\", "");
+            var fileName = $(this).val().replace("C:\\fakepath\\", "");
             $(this).next('.custom-file-label').html(fileName);
-                        });
+        });
 
-                        function OnClickApply() {
-                            var fileName = $("#input-upload").val().replace("C:\\fakepath\\", "");
+        function OnClickApply() {
+            var fileName = $("#input-upload").val().replace("C:\\fakepath\\", "");
             $(".file-placeholder").addClass("file-placeholder-enabled");
             $("#input-file-name").val(fileName);
             $(".file-placeholder-enabled").attr("data-file", fileName);
-                        }
+        }
 
-                        function OnClickClose() {
+        function OnClickClose() {
             $("#input-upload").val("");
-                        }
+        }
 
-                        function OnClickUpload() {
-                            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
+        function OnClickUpload() {
+            if (!$(this).data("isCompleted") && $(this).data("isCompleted") != undefined)
                 return;
-                            if ($("#input-upload")[0].files[0].size > 4194304) {
-                                alert("Item too large");
-                                return;
-                            }
+            if ($("#input-upload")[0].files[0].size > 4194304) {
+                alert("Item too large");
+                return;
+            }
             $(this).data("isCompleted", false);
             $(this).addClass("disabled");
-                            var formData = new FormData();
-                            formData.append("fileUpload", $("#input-upload")[0].files[0]);
-                            formData.append("title", $("#input-file-name").val());
+            var formData = new FormData();
+            formData.append("fileUpload", $("#input-upload")[0].files[0]);
+            formData.append("title", $("#input-file-name").val());
+            formData.append("owner", $("#input-file-owner").val());
+            formData.append("description", $("#input-file-description").val());
             $.ajax({
-                            url: '/Repository/file?handler=UploadFile',
+                url: '/Repository/file?handler=UploadFile',
                 type: "post",
                 data: formData,
                 cache: false,
@@ -250,21 +265,21 @@ else
                         $("input:hidden[name=__RequestVerificationToken]").val());
                 },
                 xhr: function () {
-                                    var thisXhr = $.ajaxSettings.xhr();
-                                    if (thisXhr.upload) {
-                        $("#upload-progress").fadeIn(100, () => {
-                         thisXhr.upload.addEventListener('progress', function (e) {
-                             if (e.lengthComputable) {
-                                 console.log((e.loaded / e.total) * 100 + "%");
-                                    $("#upload-progress .progress-bar").css({
-                                     "width": (e.loaded / e.total) * 100 + "%"
-                                    });
-                                    }
-                                }, false);
+                            var thisXhr = $.ajaxSettings.xhr();
+                            if (thisXhr.upload) {
+                $("#upload-progress").fadeIn(100, () => {
+                    thisXhr.upload.addEventListener('progress', function (e) {
+                        if (e.lengthComputable) {
+                            console.log((e.loaded / e.total) * 100 + "%");
+                            $("#upload-progress .progress-bar").css({
+                                "width": (e.loaded / e.total) * 100 + "%"
                             });
                         }
-                    return thisXhr;
-                    },
+                        }, false);
+                    });
+                }
+            return thisXhr;
+            },
                 success: function () {
                     $("#upload-progress").fadeOut(750, function () {
                         $(this).find(".progress-bar").removeClass("bg-success");

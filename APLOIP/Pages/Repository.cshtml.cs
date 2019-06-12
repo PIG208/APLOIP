@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using MySql.Data.MySqlClient;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
+using System;
+using System.Collections.Generic;
 
 namespace APLOIP.Pages
 {
@@ -22,7 +19,7 @@ namespace APLOIP.Pages
             MySqlIntegration sqlInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
             string[] keys = { "*" };
             var result = sqlInteg.MySqlSelect("repo_entries", keys);
-            if(result.Count > 0)
+            if (result.Count > 0)
             {
                 result.ForEach(element =>
                 {
@@ -34,6 +31,14 @@ namespace APLOIP.Pages
                         CreationTime = (DateTime)element["creation_time"],
                         Owner = (string)element["owner"]
                     };
+                    string specifier = string.Format("entry_title={0} AND operator_type={1}", MySqlIntegration.QuoteStr(entry.UniqueTitle), MySqlIntegration.QuoteStr(Operator.File));
+                    sqlInteg.MySqlSelect("repo_key_values", keys, specifier).ForEach((ele) =>
+                    {
+                        if (ele["key_title"].Equals("file_description"))
+                        {
+                            entry.Description = (string)ele["value"];
+                        }
+                    });
                     RepoEntries.Add(entry);
                 });
             }
@@ -44,6 +49,7 @@ namespace APLOIP.Pages
             public string DisplayTitle { get; set; }
             public string OperatiorType { get; set; }
             public DateTime CreationTime { get; set; }
+            public string Description { get; set; }
             public string Owner { get; set; }
 
         }

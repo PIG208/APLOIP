@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 
@@ -38,20 +33,21 @@ namespace APLOIP.Pages
             PageQuiz.UniqueTitle = (string)RouteData.Values["title"];
             MySqlIntegration sqlInteg = new MySqlIntegration(Configuration.GetConnectionString("MySqlConnection"));
             string[] keys = { "*" };
-            string specifier = (PageQuiz.UniqueTitle != null)?string.Format("entry_title={0} AND operator_type={1}", MySqlIntegration.QuoteStr(PageQuiz.UniqueTitle), MySqlIntegration.QuoteStr(Operator.Quiz)):"";
-            if(sqlInteg.MySqlSelect("repo_key_values", keys, specifier).Count > 0)
+            string specifier = (PageQuiz.UniqueTitle != null) ? string.Format("entry_title={0} AND operator_type={1}", MySqlIntegration.QuoteStr(PageQuiz.UniqueTitle), MySqlIntegration.QuoteStr(Operator.Quiz)) : "";
+            if (sqlInteg.MySqlSelect("repo_key_values", keys, specifier).Count > 0)
             {
                 var result = sqlInteg.IntegratedResult;
-                result.ForEach((element) => {
+                result.ForEach((element) =>
+                {
                     if (element.TryGetValue("key_title", out object val))
                     {
-                        switch((string)val)
+                        switch ((string)val)
                         {
                             case "title_display":
                                 PageQuiz.DisplayTitle = (string)element["value"];
                                 break;
                             case "entity_ID":
-                                if(sqlInteg.MySqlSelect("repo_quiz_entities", keys, "ID=" + int.Parse((string)element["value"])).Count > 0)
+                                if (sqlInteg.MySqlSelect("repo_quiz_entities", keys, "ID=" + int.Parse((string)element["value"])).Count > 0)
                                 {
                                     var obj = sqlInteg.IntegratedResult;
                                     IEntity entity = GetEntityByType((string)obj[0]["type"]);
