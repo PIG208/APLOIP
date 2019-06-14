@@ -8,6 +8,7 @@
 <button type="button" id="btn-create" class="btn btn-primary float-right">Create</button>
 <h2>RepoQuiz</h2>
 <h5>@Model.PageQuiz.DisplayTitle</h5>
+<p style="font-size:7vw">Coming Soon!</p>
 <div id="modal-quiz" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -25,19 +26,23 @@
                             <input name="quiz_title" id="input-display-title" class="form-control" />
                         </div>
                     </div>
+                    <br />
                     <div id="template" class="group-entity" hidden>
+                        <br />
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Info</span>
                             </div>
                             <input name="entity_info" class="entity-title form-control" placeholder="Mind Test|You need to look at the shape and choose an answer|Red|Blue|Yellow" />
                         </div>
+                        <br />
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Answer</span>
                             </div>
                             <input name="entity_answer" class="entity-title form-control" placeholder="0|1|2" />
                         </div>
+                        <br />
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Type</span>
@@ -46,18 +51,21 @@
                         </div>
                     </div>
                     <div class="group-entity">
+                        <br />
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Info</span>
                             </div>
                             <input name="entity_info" class="entity-info form-control" placeholder="Mind Test|You need to look at the shape and choose an answer|Red|Blue|Yellow" />
                         </div>
+                        <br />
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Answer</span>
                             </div>
                             <input name="entity_answer" class="entity-answer form-control" placeholder="0|1|2" />
                         </div>
+                        <br />
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">Type</span>
@@ -70,7 +78,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button id="btn-submit" class="btn btn-info" data-dismiss="modal">Submit</button>
+                <button id="btn-submit" class="btn btn-info" data-dismiss="modal" disabled>Submit</button>
                 <button class="btn btn-light" data-dismiss="modal">Close</button>
             </div>
         </div>
@@ -96,6 +104,8 @@
     })
     $("#btn-submit").mousedown(() => $("#form-quiz").submit());
     $("#form-quiz").submit(function (e) {
+        alert("function not supported yet!!");
+        return;
         e.preventDefault();
         var formData = new FormData();
         formData.append("UniqueTitle", "@Model.PageQuiz.UniqueTitle");
