@@ -1,5 +1,6 @@
 # APLIOP
 APLOIP(AP Lang Online Interaction Platform) provides students studying AP Language with supports online
+Using ASP.NET, we built an interacting website allowing and encouraging users to create their own contents. For now, account management system has not been available yet. I will continue maintaining and contributing to this site.
 # Overview
 The anticipated outcome of this project is a comprehensive study website specifically designed for AP Lang. It’s going to be consisted with two major modules: Lang-pedia and Lang-repository. We aim to assist AP Lang students, especially students in SMS receiving advanced placement courses, through setting up an online information exchanging platform.
 # Lang-pedia
