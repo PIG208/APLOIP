@@ -14,10 +14,11 @@
         if (index > 0)
         {
             int startIndex = (index - totalLength/2 > 0) ? (index - totalLength/2) : 0;
-            if (startIndex + totalLength < str.Length)
-                return "..." + str.Substring(startIndex, totalLength) + "...";
-            else
-                return "..." + str.Substring(startIndex);
+            //substring considering whether the totallength cross the boundary
+            str = (startIndex + totalLength < str.Length)?str.Substring(startIndex, totalLength):str.Substring(startIndex);
+            int i = str.IndexOf(' ');
+            int j = str.LastIndexOf(' ');
+            return str.Substring((i > 0) ? i : 0, (j > 0 && j != i) ? j: str.Length);
         }
         else
         {
@@ -76,7 +77,14 @@
     }
 </style>
 
-<h2>Showing results for @Model.Query</h2>
+<form id="search" class="form-inline" action="/Search" method="GET">
+    <div class="input-group" style="width:100%">
+        <input name="query" class="form-control input-group" style="height:3rem" placeholder="Search" value="@Model.Query" aria-label="search" />
+        <div class="input-group-append">
+            <button class="btn btn-outline-primary btn-group" type="submit">Search</button>
+        </div>
+    </div>
+</form>
 <hr />
 <div id="content">
     <p>

@@ -54,11 +54,12 @@ namespace APLOIP.Pages
                     {
                         ResultEntries.Add(new Entry
                         {
-                            DisplayTitle = (string)obj?["title_display"],
-                            UniqueTitle = (string)obj?["title_unique"],
-                            BasicClassID = (int)obj?["basic_class_ID"],
-                            PageContent = (string)obj?["content"],
-                            CreationTime = (DateTime)obj?["creation_time"]
+                            DisplayTitle = Convert.ToString(obj?["title_display"]),
+                            UniqueTitle = Convert.ToString(obj?["title_unique"]),
+                            BasicClassID = Convert.ToInt32(obj?["basic_class_ID"]),
+                            PageContent = Convert.ToString(obj?["content"]),
+                            CreationTime = Convert.ToDateTime(obj?["creation_time"]),
+                            ModificationTime = Convert.ToDateTime(obj?["modification_time"]),
                         });
                     });
                 if (PageNum > ResultEntries.Count / ResultLimit || PageNum < 0)

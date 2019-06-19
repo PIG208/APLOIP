@@ -221,6 +221,9 @@ namespace MySql.Data.MySqlClient
                         {
                             var val = mySqlDataReader.GetValue(i);
                             string str;
+                            if (val.GetType() == typeof(DBNull))
+                                val = null;
+                            else
                             if (val.GetType() == typeof(DateTime))
                                 str = ((DateTime)val).ToString("yyyy-MM-dd HH-mm-ss");
                             else
